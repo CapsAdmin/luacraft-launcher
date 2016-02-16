@@ -1,0 +1,54 @@
+$ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+
+function download($url, $dir, $move_files)
+{
+	if(Test-Path "$ROOT_DIR\$dir")
+	{
+		Write-Output "folder $dir already exists. skipping"
+	}
+	else
+	{
+		$temp_file = "$ROOT_DIR\temp.zip"
+		$out_dir = "$ROOT_DIR\$dir"
+		
+		Write-Output "downloading $url to $temp_file"			
+		(New-Object System.Net.WebClient).DownloadFile($url, $temp_file)		
+		
+		Write-Output "extracting $temp_file to $out_dir"
+		$shell = new-object -com shell.application
+		$zip = $shell.NameSpace($temp_file)
+		
+		if (!(Test-Path $out_dir)) 
+		{		
+			mkdir $out_dir
+		}
+		
+		foreach($item in $zip.items())
+		{
+			$shell.Namespace("$ROOT_DIR\$dir").copyhere($item)
+		}
+		
+		Remove-Item $temp_file -ErrorAction SilentlyContinue -Confirm:$false
+		
+		if ($move_files)
+		{
+			Move-Item -Path "$out_dir\*\*" -Destination "$out_dir"
+		}
+	}
+}
+
+download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
+download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip" "jdk" 1
+
+if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
+{
+	Remove-Item minecraft\src\ -ErrorAction SilentlyContinue -Recurse:$true
+}
+
+download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft\src" 1
+
+cd minecraft\
+
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "$ROOT_DIR\jdk", "Process")
+&.\gradlew setupDecompWorkspace --refresh-dependencies
+&.\gradlew build
