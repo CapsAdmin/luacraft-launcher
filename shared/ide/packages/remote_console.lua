@@ -5,8 +5,8 @@ local PLUGIN = {
 	version = 0.1,
 }
 
-local working_directory = ".."
-local cmd_line = jit.os == "Windows" and "client" or "bash client.bash"
+local working_directory = "../"
+local cmd_line = jit.os == "Windows" and "client.cmd" or "bash client.bash"
 
 local env_vars = {
 	JAVA_HOME = "../jdk",
