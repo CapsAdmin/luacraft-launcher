@@ -43,6 +43,8 @@ build ()
 	export JAVA_HOME="$ROOT_DIR/jdk"
 	bash gradlew setupDecompWorkspace --refresh-dependencies
 	bash gradlew build
+	
+	cd ..
 }
 
 if [ "$1" == "build" ] || [ "$1" == "" ]; then
