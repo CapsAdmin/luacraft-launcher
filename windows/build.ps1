@@ -50,11 +50,13 @@ function build()
 
 	download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft\src" 1
 
-	cd minecraft\
+	cd minecraft
 
-	[Environment]::SetEnvironmentVariable("JAVA_HOME", "$ROOT_DIR\jdk", "Process")
+	$env:JAVA_HOME = "$ROOT_DIR\jdk"
 	.\gradlew setupDecompWorkspace --refresh-dependencies
 	.\gradlew build
+	
+	cd ..
 }
 
 if($arg -eq "build")
