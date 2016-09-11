@@ -53,8 +53,10 @@ function build()
 	cd minecraft
 
 	$env:JAVA_HOME = "$ROOT_DIR\jdk"
-	.\gradlew setupDecompWorkspace --refresh-dependencies
-	.\gradlew build
+	.\gradlew setupDecompWorkspace --refresh-dependencies | Out-Null
+	.\gradlew build | Out-Null
+	
+	mkdir run
 	
 	cd ..
 }

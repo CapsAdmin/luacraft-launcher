@@ -44,6 +44,8 @@ build ()
 	bash gradlew setupDecompWorkspace --refresh-dependencies
 	bash gradlew build
 	
+	mkdir run
+	
 	cd ..
 }
 
