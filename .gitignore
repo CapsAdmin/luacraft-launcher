@@ -2,6 +2,11 @@
 *.!sync
 .directory
 /data
-/*/jdk
-/*/minecraft
-/*/ide
+
+/linux/jdk
+/linux/minecraft
+/linux/ide
+
+/windows/jdk
+/windows/minecraft
+/windows/ide
