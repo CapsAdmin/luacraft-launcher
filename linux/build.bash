@@ -81,14 +81,14 @@ fi
 if [ "$1" == "update" ]; then
 	wget "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" -O temp.zip
 	unzip temp.zip -d temp
-	cp -rf $ROOT_DIR/temp/*/* $ROOT_DIR/../
-	rm -f temp
-	rm -rf temp.zip
+	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
+	rm -r -f $ROOT_DIR/temp/
+	rm -f temp.zip
 fi
 
 if [ "$1" == "clean" ]; then
-	rm -rf $ROOT_DIR/ide
-	rm -rf $ROOT_DIR/jdk
-	rm -rf $ROOT_DIR/minecraft
+	rm -r -f $ROOT_DIR/ide
+	rm -r -f $ROOT_DIR/jdk
+	rm -r -f $ROOT_DIR/minecraft
 	rm -f $ROOT_DIR/temp.zip
 fi
