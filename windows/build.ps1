@@ -1,4 +1,5 @@
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+$arg = $env:arg
 
 function download($url, $dir, $move_files)
 {
@@ -37,18 +38,82 @@ function download($url, $dir, $move_files)
 	}
 }
 
-download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
-download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip" "jdk" 1
-
-if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
+function build()
 {
-	Remove-Item minecraft\src\ -ErrorAction SilentlyContinue -Recurse:$true
+	download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
+	download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip" "jdk" 1
+
+	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
+	{
+		Remove-Item minecraft\src\ -ErrorAction SilentlyContinue -Recurse:$true
+	}
+
+	download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft\src" 1
+
+	cd minecraft\
+
+	[Environment]::SetEnvironmentVariable("JAVA_HOME", "$ROOT_DIR\jdk", "Process")
+	&.\gradlew setupDecompWorkspace --refresh-dependencies
+	&.\gradlew build
 }
 
-download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft\src" 1
+if($arg -eq "build")
+{
+	build
+}
 
-cd minecraft\
+if($arg -eq "ide")
+{
+	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
 
-[Environment]::SetEnvironmentVariable("JAVA_HOME", "$ROOT_DIR\jdk", "Process")
-&.\gradlew setupDecompWorkspace --refresh-dependencies
-&.\gradlew build
+	cd ide/
+	&.\zbstudio.exe -cfg ../../shared/ide/config.lua
+}
+
+if($arg -eq "client" -Or $arg -eq "server")
+{
+	if(!Test-Path "$ROOT_DIR\$dir")
+	{
+		build
+	}
+	
+	if(!Test-Path "$ROOT_DIR/minecraft/run/addons")
+	{
+		cmd /c mklink "$ROOT/../shared/addons/" "$ROOT/minecraft/run/addons"
+	}
+	
+	if(!Test-Path "$ROOT_DIR/minecraft/run/lua")
+	{
+		cmd /c mklink "$ROOT/../shared/lua/" "$ROOT/minecraft/run/lua"
+	}
+	
+	
+	cd minecraft
+	set JAVA_HOME=$ROOT_DIR/jdk
+	
+	if($arg -eq "client")
+	{
+		$run=runClient
+	}
+	elseif ($arg -eq "server")
+	{
+		$run=runServer
+	}
+	
+	gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+}
+
+if($arg -eq "update")
+{
+	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false $ROOT_DIR/temp/*/* $ROOT_DIR/../
+	Remove-Item "$ROOT_DIR/temp" -ErrorAction SilentlyContinue -Confirm:$false
+}
+
+if($arg -eq "clean")
+{
+	rm -r -f $ROOT_DIR/ide
+	rm -r -f $ROOT_DIR/jdk
+	rm -r -f $ROOT_DIR/minecraft
+	rm -f $ROOT_DIR/temp.zip
+}

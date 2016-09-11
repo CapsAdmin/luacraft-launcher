@@ -22,6 +22,8 @@ download ()
 		if [ -n "$move_files" ]; then
 			mv $out_dir/*/* $out_dir/
 		fi
+		
+		rm -f "$ROOT_DIR/temp.zip"
 	fi
 }
 
@@ -79,11 +81,9 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 fi
 
 if [ "$1" == "update" ]; then
-	wget "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" -O temp.zip
-	unzip temp.zip -d temp
+	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
-	rm -f temp.zip
 fi
 
 if [ "$1" == "clean" ]; then
