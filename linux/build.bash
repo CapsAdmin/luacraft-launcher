@@ -50,7 +50,7 @@ if [ "$1" == "build" ] || [ "$1" == "" ]; then
 fi
 
 if [ "$1" == "ide" ]; then
-	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide"
+	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
 
 	cd ide/
 	./zbstudio.sh -cfg ../../shared/ide/config.lua

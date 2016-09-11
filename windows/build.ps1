@@ -1,5 +1,5 @@
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
-$arg = $env:arg
+$arg = "client" #$env:arg
 
 function download($url, $dir, $move_files)
 {
@@ -72,48 +72,49 @@ if($arg -eq "ide")
 
 if($arg -eq "client" -Or $arg -eq "server")
 {
-	if(!Test-Path "$ROOT_DIR\$dir")
+	if(!(Test-Path "$ROOT_DIR\$dir"))
 	{
 		build
 	}
 	
-	if(!Test-Path "$ROOT_DIR/minecraft/run/addons")
+	if(!(Test-Path "$ROOT_DIR\minecraft\run\addons"))
 	{
-		cmd /c mklink "$ROOT/../shared/addons/" "$ROOT/minecraft/run/addons"
+		&.\mklink "$ROOT_DIR\..\shared\addons\" "$ROOT_DIR\minecraft\run\addons"
 	}
 	
-	if(!Test-Path "$ROOT_DIR/minecraft/run/lua")
+	if(!(Test-Path "$ROOT_DIR\minecraft\run\lua"))
 	{
-		cmd /c mklink "$ROOT/../shared/lua/" "$ROOT/minecraft/run/lua"
+		&.\mklink "$ROOT_DIR\..\shared\lua\" "$ROOT_DIR\minecraft\run\lua"
 	}
 	
 	
-	cd minecraft
-	set JAVA_HOME=$ROOT_DIR/jdk
+	set JAVA_HOME="$ROOT_DIR/jdk"
 	
 	if($arg -eq "client")
 	{
-		$run=runClient
+		$run="runClient"
 	}
 	elseif ($arg -eq "server")
 	{
-		$run=runServer
+		$run="runServer"
 	}
 	
-	gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	cd minecraft
+	
+	&.\gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 }
 
 if($arg -eq "update")
 {
 	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
-	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false $ROOT_DIR/temp/*/* $ROOT_DIR/../
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
 	Remove-Item "$ROOT_DIR/temp" -ErrorAction SilentlyContinue -Confirm:$false
 }
 
 if($arg -eq "clean")
 {
-	rm -r -f $ROOT_DIR/ide
-	rm -r -f $ROOT_DIR/jdk
-	rm -r -f $ROOT_DIR/minecraft
-	rm -f $ROOT_DIR/temp.zip
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\ide"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\jdk"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\minecraft"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\temp.zip"
 }
