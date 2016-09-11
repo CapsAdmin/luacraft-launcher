@@ -106,14 +106,14 @@ if($arg -eq "client" -Or $arg -eq "server")
 if($arg -eq "update")
 {
 	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
-	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
-	Remove-Item "$ROOT_DIR/temp" -ErrorAction SilentlyContinue -Confirm:$false
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp"
 }
 
 if($arg -eq "clean")
 {
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\ide"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\jdk"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\minecraft"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false "$ROOT_DIR\temp.zip"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\ide"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\jdk"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\minecraft"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\temp.zip"
 }
