@@ -80,14 +80,10 @@ fi
 
 if [ "$1" == "update" ]; then
 	wget "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" -O temp.zip
-<<<<<<< HEAD
 	unzip temp.zip -d temp
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
 	rm -f temp.zip
-=======
-	unzip temp.zip -d $ROOT_DIR/../
->>>>>>> bcd529a37a10807a3dac195f57cddd41ea6e2e7d
 fi
 
 if [ "$1" == "clean" ]; then
