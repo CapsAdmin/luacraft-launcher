@@ -53,8 +53,8 @@ function build()
 	cd minecraft\
 
 	[Environment]::SetEnvironmentVariable("JAVA_HOME", "$ROOT_DIR\jdk", "Process")
-	&.\gradlew setupDecompWorkspace --refresh-dependencies
-	&.\gradlew build
+	.\gradlew setupDecompWorkspace --refresh-dependencies
+	.\gradlew build
 }
 
 if($arg -eq "build")
@@ -67,7 +67,7 @@ if($arg -eq "ide")
 	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
 
 	cd ide
-	&.\zbstudio.exe -cfg ../../shared/ide/config.lua
+	.\zbstudio.exe -cfg ../../shared/ide/config.lua
 }
 
 if($arg -eq "client" -Or $arg -eq "server")
@@ -100,7 +100,7 @@ if($arg -eq "client" -Or $arg -eq "server")
 	
 	cd minecraft
 	
-	&.\gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	.\gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 }
 
 if($arg -eq "update")
