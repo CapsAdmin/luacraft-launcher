@@ -1,0 +1,7 @@
+.Sync*
+*.!sync
+.directory
+/data
+/*/jdk
+/*/minecraft
+/*/ide

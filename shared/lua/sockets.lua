@@ -1,0 +1,1 @@
+print(package.loadlib("../../ide/bin/linux/x64/clibs/socket/core.so", "luaopen_socket_core")())

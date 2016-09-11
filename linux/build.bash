@@ -2,10 +2,10 @@
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-rm -f "$ROOT_DIR/temp.zip"
-
 download () 
 {
+	rm -f "$ROOT_DIR/temp.zip"
+
    url=$1
    dir=$2
    move_files=$3
@@ -26,17 +26,55 @@ download ()
    fi
 }
 
-download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
-download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-linux-amd64-image.zip" "jdk" 1
+build ()
+{
+	download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
+	download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-linux-amd64-image.zip" "jdk" 1
 
-if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
-    rm -rf "$ROOT_DIR/minecraft/src"
+	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
+		rm -rf "$ROOT_DIR/minecraft/src"
+	fi
+
+	download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft/src" 1
+
+	cd minecraft
+
+	export JAVA_HOME="$ROOT_DIR/jdk"
+	bash gradlew setupDecompWorkspace --refresh-dependencies
+	bash gradlew build
+}
+
+if [ ! -z "$BUILD" ]; then
+	build
 fi
 
-download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft/src" 1
+if [ ! -z "$IDE" ]; then
+	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide"
 
-cd minecraft
+	cd ide/
+	./zbstudio.sh -cfg ../../shared/ide/config.lua
+fi
 
-export JAVA_HOME="$ROOT_DIR/jdk"
-bash gradlew setupDecompWorkspace --refresh-dependencies
-bash gradlew build
+if [ ! -z "$CLIENT" ] || [ ! -z "$SERVER" ]; then
+	if ! [ -d "$ROOT_DIR/minecraft" ]; then
+		build
+	fi
+
+	if ! [ -e "$ROOT_DIR/minecraft/run/addons" ]; then
+		ln -s -d $ROOT_DIR/../shared/addons/ minecraft/run/addons
+	fi
+
+	if ! [ -e "$ROOT_DIR/minecraft/run/lua" ]; then
+		ln -s -d $ROOT_DIR/../shared/lua/ minecraft/run/lua
+	fi
+	
+	if [ ! -z "$CLIENT" ]; then
+		run=runClient
+	elif [ ! -z "$SERVER" ]; then
+		run=runServer
+	fi
+	
+	cd minecraft	
+	export JAVA_HOME="$ROOT_DIR/jdk"
+	bash gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+fi
