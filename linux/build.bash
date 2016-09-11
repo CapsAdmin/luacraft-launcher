@@ -4,26 +4,25 @@ ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 download () 
 {
-	rm -f "$ROOT_DIR/temp.zip"
-
-   url=$1
-   dir=$2
-   move_files=$3
+	url=$1
+	dir=$2
+	move_files=$3
    
-   if [ -d "$ROOT_DIR/$dir" ]; then
-        echo "folder $dir already exists. skipping"
-   else
-        temp_file="$ROOT_DIR/temp.zip"
-	out_dir="$ROOT_DIR/$dir"
-	
-	echo "downloading $url to $temp_file"
-	wget "$url" -O "$temp_file"
-	unzip "$temp_file" -d "$out_dir"
-	
-	if [ -n "$move_files" ]; then
-            mv $out_dir/*/* $out_dir/
-        fi
-   fi
+	if [ -d "$ROOT_DIR/$dir" ]; then
+		echo "folder $dir already exists. skipping"
+	else
+		rm -f "$ROOT_DIR/temp.zip"
+		temp_file="$ROOT_DIR/temp.zip"
+		out_dir="$ROOT_DIR/$dir"
+		
+		echo "downloading $url to temp.zip"
+		wget "$url" -O temp.zip
+		unzip temp.zip -d "$out_dir"
+		
+		if [ -n "$move_files" ]; then
+			mv $out_dir/*/* $out_dir/
+		fi
+	fi
 }
 
 build ()
@@ -44,18 +43,18 @@ build ()
 	bash gradlew build
 }
 
-if [ ! -z "$BUILD" ]; then
+if [ "$1" == "build" ] || [ "$1" == "" ]; then
 	build
 fi
 
-if [ ! -z "$IDE" ]; then
+if [ "$1" == "ide" ]; then
 	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide"
 
 	cd ide/
 	./zbstudio.sh -cfg ../../shared/ide/config.lua
 fi
 
-if [ ! -z "$CLIENT" ] || [ ! -z "$SERVER" ]; then
+if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 	if ! [ -d "$ROOT_DIR/minecraft" ]; then
 		build
 	fi
@@ -68,13 +67,28 @@ if [ ! -z "$CLIENT" ] || [ ! -z "$SERVER" ]; then
 		ln -s -d $ROOT_DIR/../shared/lua/ minecraft/run/lua
 	fi
 	
-	if [ ! -z "$CLIENT" ]; then
+	if [ "$1" == "client" ]; then
 		run=runClient
-	elif [ ! -z "$SERVER" ]; then
+	elif [ "$1" == "server" ]; then
 		run=runServer
 	fi
 	
 	cd minecraft	
 	export JAVA_HOME="$ROOT_DIR/jdk"
 	bash gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+fi
+
+if [ "$1" == "update" ]; then
+	wget "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" -O temp.zip
+	unzip temp.zip -d temp
+	cp -rf $ROOT_DIR/temp/*/* $ROOT_DIR/../
+	rm -f temp
+	rm -rf temp.zip
+fi
+
+if [ "$1" == "clean" ]; then
+	rm -rf $ROOT_DIR/ide
+	rm -rf $ROOT_DIR/jdk
+	rm -rf $ROOT_DIR/minecraft
+	rm -f $ROOT_DIR/temp.zip
 fi

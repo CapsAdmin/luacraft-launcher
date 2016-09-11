@@ -1,4 +1,3 @@
 #/bin/bash
 
-export CLIENT=1
-bash build.bash
+bash build.bash client
