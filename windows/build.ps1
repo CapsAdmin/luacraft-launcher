@@ -1,5 +1,5 @@
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
-$arg = "client" #$env:arg
+$arg = $env:arg
 
 function download($url, $dir, $move_files)
 {
@@ -66,29 +66,28 @@ if($arg -eq "ide")
 {
 	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
 
-	cd ide/
+	cd ide
 	&.\zbstudio.exe -cfg ../../shared/ide/config.lua
 }
 
 if($arg -eq "client" -Or $arg -eq "server")
 {
-	if(!(Test-Path "$ROOT_DIR\$dir"))
+	if(!(Test-Path "$ROOT_DIR\minecraft"))
 	{
 		build
 	}
 	
 	if(!(Test-Path "$ROOT_DIR\minecraft\run\addons"))
 	{
-		&.\mklink "$ROOT_DIR\..\shared\addons\" "$ROOT_DIR\minecraft\run\addons"
+		cmd /c mklink /d /j "$ROOT_DIR\minecraft\run\addons" "$ROOT_DIR\..\shared\addons" 
 	}
 	
 	if(!(Test-Path "$ROOT_DIR\minecraft\run\lua"))
 	{
-		&.\mklink "$ROOT_DIR\..\shared\lua\" "$ROOT_DIR\minecraft\run\lua"
+		cmd /c mklink /d /j "$ROOT_DIR\minecraft\run\lua" "$ROOT_DIR\..\shared\lua" 
 	}
 	
-	
-	set JAVA_HOME="$ROOT_DIR/jdk"
+	$env:JAVA_HOME = "$ROOT_DIR\jdk"
 	
 	if($arg -eq "client")
 	{

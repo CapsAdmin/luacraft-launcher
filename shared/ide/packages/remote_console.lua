@@ -5,16 +5,12 @@ local PLUGIN = {
 	version = 0.1,
 }
 
-local working_directory = "../minecraft"
-local cmd_line = "gradlew runClient -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart"
+local working_directory = ".."
+local cmd_line = jit.os == "Windows" and "client" or "bash client.bash"
 
 local env_vars = {
 	JAVA_HOME = "../jdk",
 }
-
-if jit.os ~= "Windows" then
-	cmd_line = "bash " .. cmd_line
-end
 
 local shellbox
 
