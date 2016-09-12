@@ -59,8 +59,8 @@ function build()
 	cd minecraft
 
 	$env:JAVA_HOME = "$ROOT_DIR\jdk"
-	.\gradlew setupDecompWorkspace --refresh-dependencies | Out-Null
-	.\gradlew build | Out-Null
+	.\gradlew setupDecompWorkspace --refresh-dependencies | Write-Output
+	.\gradlew build | Write-Output
 	
 	mkdir run
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\..\shared\options.txt" "$ROOT_DIR\run\options.txt"
