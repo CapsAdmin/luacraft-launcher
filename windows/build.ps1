@@ -1,3 +1,9 @@
+$URL_JAVA="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip"
+$URL_FORGE="http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip"
+$URL_LUACRAFT="https://github.com/luastoned/LuaCraft/archive/master.zip"
+$URL_IDE="https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
+$URL_REPO="https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master"
+
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 $arg = $env:arg
 
@@ -40,15 +46,15 @@ function download($url, $dir, $move_files)
 
 function build()
 {
-	download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
-	download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip" "jdk" 1
+	download $URL_JAVA "jdk" 1
+	download $URL_JAVA "minecraft"
 
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
 	{
 		Remove-Item minecraft\src\ -ErrorAction SilentlyContinue -Recurse:$true
 	}
 
-	download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft\src" 1
+	download $URL_LUACRAFT "minecraft\src" 1
 
 	cd minecraft
 
@@ -68,7 +74,7 @@ if($arg -eq "build")
 
 if($arg -eq "ide")
 {
-	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
+	download $URL_IDE "ide" 1
 
 	cd ide
 	.\zbstudio.exe -cfg ../../shared/ide/config.lua
@@ -109,7 +115,7 @@ if($arg -eq "client" -Or $arg -eq "server")
 
 if($arg -eq "update")
 {
-	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
+	download $URL_REPO "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
 	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp"
 }

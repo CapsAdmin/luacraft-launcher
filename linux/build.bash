@@ -1,5 +1,11 @@
 #/bin/bash
 
+URL_JAVA="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-linux-amd64-image.zip"
+URL_FORGE="http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip"
+URL_LUACRAFT="https://github.com/luastoned/LuaCraft/archive/master.zip"
+URL_IDE="https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
+URL_REPO="https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master"
+
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 download () 
@@ -29,14 +35,14 @@ download ()
 
 build ()
 {
-	download "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip" "minecraft"
-	download "https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-linux-amd64-image.zip" "jdk" 1
+	download $URL_FORGE "minecraft"
+	download $URL_JAVA "jdk" 1
 
 	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
 		rm -rf "$ROOT_DIR/minecraft/src"
 	fi
 
-	download "https://github.com/luastoned/LuaCraft/archive/master.zip" "minecraft/src" 1
+	download $URL_LUACRAFT "minecraft/src" 1
 
 	cd minecraft
 
@@ -54,7 +60,7 @@ if [ "$1" == "build" ] || [ "$1" == "" ]; then
 fi
 
 if [ "$1" == "ide" ]; then
-	download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip" "ide" 1
+	download $URL_IDE "ide" 1
 
 	cd ide/
 	./zbstudio.sh -cfg ../../shared/ide/config.lua
@@ -85,7 +91,7 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 fi
 
 if [ "$1" == "update" ]; then
-	download "https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master" "temp"
+	download $URL_REPO "temp"
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
 fi
