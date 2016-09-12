@@ -1,47 +1,29 @@
 local G = ...
 
-local default_project_dir = "../../shared/lua"
-local default_file = "/tutorial/intro.lua"
-local default_interpreter = "luacraft"
-
-
 editor.usetabs = true
 editor.tabwidth = 4
 editor.usewrap = false
 editor.fontsize = 9
 editor.menuicon = true
+format.apptitle = "Luacraft IDE"
 styles.indicator.varglobal = nil
 
-if os.getenv("USER") ~= "caps" then
-	excludelist = {
-		"extensions/",
-	}
-end
+toolbar.icons = {
+	ID.NEW, ID.OPEN, ID.SAVE, ID.SAVEALL, ID.PROJECTDIRFROMFILE, ID.PROJECTDIRCHOOSE,
+	ID.SEPARATOR,
+	ID.FIND, ID.REPLACE, ID.FINDINFILES,
+	ID.SEPARATOR,
+	ID.RUN,
+  --[[
+	ID.SEPARATOR,
+	ID.RUN, ID.STARTDEBUG, ID.RUNNOW, ID.STOPDEBUG, ID.DETACHDEBUG, ID.BREAK,
+	ID.STEP, ID.STEPOVER, ID.STEPOUT, ID.RUNTO,
+	ID.SEPARATOR,
+	ID.BREAKPOINTTOGGLE, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, ID.VIEWWATCHWINDOW,
+  [ID.FINDINFILES] = false,]]
+}
 
 package("packages/") -- relative to config.lua
-
-local temp
-temp = ide:AddTimer(wx.wxGetApp(), function()
-	temp:Stop()
-
-	do -- set default project directory
-		local obj = wx.wxFileName(default_project_dir)
-		obj:Normalize()
-
-		ProjectUpdateProjectDir(obj:GetFullPath())
-	end
-
-	do -- open default file
-		if #ide:GetDocuments() == 0 then
-			LoadFile(ide.config.path.projectdir .. default_file)
-		end
-	end
-
-	do -- set default interpreter
-		ProjectSetInterpreter(default_interpreter)
-	end
-end)
-temp:Start(0.1,false)
 
 do
 	local options = {
