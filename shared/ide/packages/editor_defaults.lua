@@ -5,7 +5,6 @@ local PLUGIN = {
 }
 local default_project_dir = "../../shared/lua"
 local default_file = "/tutorial/intro.lua"
-local default_interpreter = "luacraft"
 
 if os.getenv("USER") == "caps" then
 	default_project_dir = "../../shared/"
@@ -29,10 +28,6 @@ function PLUGIN:onAppLoad()
 		if #ide:GetDocuments() == 0 then
 			LoadFile(ide.config.path.projectdir .. default_file)
 		end
-	end
-
-	if default_interpreter then -- set default interpreter
-		ProjectSetInterpreter(default_interpreter)
 	end
 end
 
