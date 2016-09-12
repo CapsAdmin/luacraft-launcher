@@ -13,6 +13,7 @@ local events = {
 
 for event, entity_func in pairs(events) do
 	hook.Add("entity." .. event, "entity_events", function(ent, ...)
+		ent.temp_hack = true -- fixes newindex issues
 		if ent and ent[entity_func] then
 			ent[entity_func](ent, ...)
 		end
