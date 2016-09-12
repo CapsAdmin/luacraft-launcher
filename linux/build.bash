@@ -100,6 +100,8 @@ if [ "$1" == "update" ]; then
 	download $URL_REPO "temp"
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
+	
+	download $URL_LUACRAFT "minecraft/src" 1
 fi
 
 if [ "$1" == "clean" ]; then
