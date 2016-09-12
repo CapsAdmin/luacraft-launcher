@@ -116,6 +116,11 @@ if($arg -eq "client" -Or $arg -eq "server")
 
 if($arg -eq "update")
 {
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\ide
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\examples
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\tutorial
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\autorun
+
 	download $URL_REPO "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
 	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp"

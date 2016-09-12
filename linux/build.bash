@@ -92,6 +92,10 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 fi
 
 if [ "$1" == "update" ]; then
+	rm -r -f $ROOT_DIR/../shared/ide
+	rm -r -f $ROOT_DIR/../shared/lua/examples
+	rm -r -f $ROOT_DIR/../shared/lua/tutorial
+	rm -r -f $ROOT_DIR/../shared/lua/autorun
 	download $URL_REPO "temp"
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
