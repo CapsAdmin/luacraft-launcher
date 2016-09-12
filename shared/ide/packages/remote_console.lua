@@ -8,6 +8,9 @@ local PLUGIN = {
 local ID_START = NewID()
 local ID_STOP = NewID()
 
+local ID_RUN_SCRIPT_SERVER = NewID()
+local ID_RUN_SCRIPT_CLIENT = NewID()
+
 local working_directory = "../"
 local cmd_line = jit.os == "Windows" and "client.cmd" or "bash client.bash"
 
@@ -16,11 +19,23 @@ local env_vars = {
 }
 
 function PLUGIN:RunString(str, id)
-	if self.pid then
+	if self:IsRunning() then
 		local file = assert(io.open(working_directory .. "/minecraft/run/ide_input_" .. id, "ab"))
 		file:write(str)
 		file:write("\n12WD7\n")
 		file:close()
+	else
+		self:Print("Program is not launched")
+	end
+end
+
+function PLUGIN:RunScript(path, where)
+	if self:IsRunning() then
+		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
+		ide:Print("loading: ", path)
+		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
+		self:RunString(str, where)
+		return true
 	else
 		self:Print("Program is not launched")
 	end
@@ -31,8 +46,12 @@ function PLUGIN:Print(...)
 	self.server_console:Print(...)
 end
 
+function PLUGIN:IsRunning()
+	return self.pid ~= nil
+end
+
 function PLUGIN:StartProcess()
-	if self.pid then
+	if self:IsRunning() then
 		self:Print("process already started")
 	end
 	self:Print("launching...")
@@ -55,7 +74,7 @@ function PLUGIN:StartProcess()
 end
 
 function PLUGIN:StopProcess()
-	if self.pid then
+	if self:IsRunning() then
 		self:Print("stopping...")
 
 		local pid = self.pid
@@ -79,18 +98,33 @@ function PLUGIN:StopProcess()
 end
 
 function PLUGIN:onRegister()
-	ide:GetMainFrame():Connect(ID_START, wx.wxEVT_COMMAND_MENU_SELECTED, function(event) ide:Print("start") self:StartProcess() end)
-	ide:GetMainFrame():Connect(ID_STOP, wx.wxEVT_COMMAND_MENU_SELECTED, function(event) ide:Print("stop") self:StopProcess() end)
-
 	local tb = ide:GetToolBar()
 
-    self.tool_start = tb:AddTool(ID_START, "Start", ide:GetBitmap("RUN", "TOOLBAR", wx.wxSize(24,24)))
+    self.tool_start = tb:AddTool(ID_START, "Start", ide:GetBitmap("DEBUG-START", "TOOLBAR", wx.wxSize(24,24)))
+	ide:GetMainFrame():Connect(ID_START, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+		self:StartProcess()
+	end)
+
+
     self.tool_stop = tb:AddTool(ID_STOP, "Stop", ide:GetBitmap("DEBUG-STOP", "TOOLBAR", wx.wxSize(24,24)))
+	ide:GetMainFrame():Connect(ID_STOP, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+		self:StopProcess()
+	end)
+
+	self.tool_run_script_server = tb:AddTool(ID_RUN_SCRIPT_SERVER, "Run On Server", ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(24,24)))
+	ide:GetMainFrame():Connect(ID_RUN_SCRIPT_SERVER, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+		self:RunScript(ide:GetDocument(ide:GetEditor()).filePath, "server")
+	end)
+
+	self.tool_run_script_client = tb:AddTool(ID_RUN_SCRIPT_CLIENT, "Run On Client", ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(24,24)))
+	ide:GetMainFrame():Connect(ID_RUN_SCRIPT_CLIENT, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+		self:RunScript(ide:GetDocument(ide:GetEditor()).filePath, "client")
+	end)
 
 	tb:Realize()
 
-	self.client_console = self:CreateRemoteConsole("Client Console", function(str) self:RunString(str, "client") end)
-	self.server_console = self:CreateRemoteConsole("Server Console", function(str) self:RunString(str, "server") end)
+	self.server_console, self.server_page = self:CreateRemoteConsole("Server Console", function(str) self:RunString(str, "server") end, ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(16,16)))
+	self.client_console, self.client_page = self:CreateRemoteConsole("Client Console", function(str) self:RunString(str, "client") end, ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(16,16)))
 end
 
 function PLUGIN:onUnregister()
@@ -103,14 +137,8 @@ function PLUGIN:onUnregister()
 end
 
 function PLUGIN:onEditorSave(editor)
-	if self.pid then
-		local path = ide:GetDocument(editor).filePath
-		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
-		ide:Print("loading: ", path)
-		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
-		self:RunString(str, "client")
-		self:RunString(str, "server")
-	end
+	self:RunScript(ide:GetDocument(editor).filePath, "client")
+	self:RunScript(ide:GetDocument(editor).filePath, "server")
 end
 
 function PLUGIN:onEditorKeyDown(editor, event)
@@ -128,11 +156,11 @@ function PLUGIN:onEditorKeyDown(editor, event)
 end
 
 
-function PLUGIN:CreateRemoteConsole(name, on_execute)
+function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	--ide.frame.bottomnotebook:RemovePage(0)
 
 	local shellbox = ide:CreateStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
-	ide.frame.bottomnotebook:AddPage(shellbox, name, false)
+	local page = ide.frame.bottomnotebook:AddPage(shellbox, name, false, bitmap)
 
 	-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 	-- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
@@ -594,7 +622,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute)
 
 	shellbox:Connect(ID_CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED, function(event) shellbox:Erase() end)
 
-	return shellbox
+	return shellbox, page
 end
 
 return PLUGIN
