@@ -56,6 +56,14 @@ build ()
 	cd ..
 }
 
+update_luacraft()
+{
+	download $URL_LUACRAFT "temp"
+	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/minecraft/src
+	rm -r -f $ROOT_DIR/temp/
+	build
+}
+
 if [ "$1" == "build" ] || [ "$1" == "" ]; then
 	build
 fi
@@ -97,11 +105,16 @@ if [ "$1" == "update" ]; then
 	rm -r -f $ROOT_DIR/../shared/lua/examples
 	rm -r -f $ROOT_DIR/../shared/lua/tutorial
 	rm -r -f $ROOT_DIR/../shared/lua/autorun
+	
 	download $URL_REPO "temp"
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
 	
-	download $URL_LUACRAFT "minecraft/src" 1
+	update_luacraft
+fi
+
+if [ "$1" == "update_luacraft" ]; then
+	update_luacraft()
 fi
 
 if [ "$1" == "clean" ]; then

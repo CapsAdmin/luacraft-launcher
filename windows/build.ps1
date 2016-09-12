@@ -68,6 +68,13 @@ function build()
 	Set-Location ..
 }
 
+function update_luacraft()
+{
+	download $URL_LUACRAFT "temp"
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\"
+}
+
 if($arg -eq "build")
 {
 	build
@@ -127,6 +134,13 @@ if($arg -eq "update")
 	download $URL_REPO "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
 	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp"
+	
+	update_luacraft
+}
+
+if($arg -eq "update_luacraft")
+{
+	update_luacraft
 }
 
 if($arg -eq "clean")
