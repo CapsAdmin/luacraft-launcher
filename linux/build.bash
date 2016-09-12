@@ -50,8 +50,8 @@ build ()
 	bash gradlew setupDecompWorkspace --refresh-dependencies
 	bash gradlew build
 	
-	mkdir run
-	cp -f ../../shared/options.txt run/options.txt
+	mkdir -p $ROOT_DIR/minecraft/run
+	cp -f $ROOT_DIR/../shared/options.txt $ROOT_DIR/minecraft/run/options.txt
 	
 	cd ..
 }
@@ -89,6 +89,7 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 	cd minecraft	
 	export JAVA_HOME="$ROOT_DIR/jdk"
 	bash gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	cd ..
 fi
 
 if [ "$1" == "update" ]; then

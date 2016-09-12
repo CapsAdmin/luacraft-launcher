@@ -27,7 +27,7 @@ function download($url, $dir, $move_files)
 		
 		if (!(Test-Path $out_dir)) 
 		{		
-			mkdir $out_dir
+			New-Item -ItemType directory -Path $out_dir
 		}
 		
 		foreach($item in $zip.items())
@@ -56,16 +56,16 @@ function build()
 
 	download $URL_LUACRAFT "minecraft\src" 1
 
-	cd minecraft
+	Set-Location minecraft
 
 	$env:JAVA_HOME = "$ROOT_DIR\jdk"
 	.\gradlew.bat setupDecompWorkspace --refresh-dependencies
 	.\gradlew.bat build
 	
-	mkdir run
-	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\..\shared\options.txt" "$ROOT_DIR\run\options.txt"
+	New-Item -ItemType directory -Path $ROOT_DIR\minecraft\run
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\shared\options.txt" "$ROOT_DIR\minecraft\run\options.txt"
 
-	cd ..
+	Set-Location ..
 }
 
 if($arg -eq "build")
@@ -77,8 +77,9 @@ if($arg -eq "ide")
 {
 	download $URL_IDE "ide" 1
 
-	cd ide
+	Set-Location ide
 	.\zbstudio.exe -cfg ../../shared/ide/config.lua
+	Set-Location ..
 }
 
 if($arg -eq "client" -Or $arg -eq "server")
@@ -109,9 +110,11 @@ if($arg -eq "client" -Or $arg -eq "server")
 		$run="runServer"
 	}
 	
-	cd minecraft
+	Set-Location minecraft
 	
 	.\gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	
+	Set-Location ..
 }
 
 if($arg -eq "update")
