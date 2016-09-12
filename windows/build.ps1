@@ -1,6 +1,6 @@
 $URL_JAVA="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/openjdk-1.7.0-u80-unofficial-windows-amd64-image.zip"
 $URL_FORGE="http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip"
-$URL_LUACRAFT="https://github.com/luastoned/LuaCraft/archive/master.zip"
+$URL_LUACRAFT="https://github.com/CapsAdmin/LuaCraft/archive/master.zip"
 $URL_IDE="https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
 $URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 
