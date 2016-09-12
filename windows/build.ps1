@@ -2,7 +2,7 @@ $URL_JAVA="https://bitbucket.org/alexkasko/openjdk-unofficial-builds/downloads/o
 $URL_FORGE="http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.8.9-11.15.1.1722/forge-1.8.9-11.15.1.1722-mdk.zip"
 $URL_LUACRAFT="https://github.com/luastoned/LuaCraft/archive/master.zip"
 $URL_IDE="https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
-$URL_REPO="https://gitlab.com/CapsAdmin/luacraft-deployment/repository/archive.zip?ref=master"
+$URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 $arg = $env:arg
