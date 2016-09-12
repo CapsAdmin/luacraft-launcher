@@ -73,6 +73,8 @@ function PLUGIN:StopProcess()
 		self.pid = nil
 	else
 		self:Print("already stopped")
+		self.client_console:Erase()
+		self.server_console:Erase()
 	end
 end
 
@@ -101,12 +103,14 @@ function PLUGIN:onUnregister()
 end
 
 function PLUGIN:onEditorSave(editor)
-	local path = ide:GetDocument(editor).filePath
-	path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
-	ide:Print("loading: ", path)
-	local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
-	self:RunString(str, "client")
-	self:RunString(str, "server")
+	if self.pid then
+		local path = ide:GetDocument(editor).filePath
+		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
+		ide:Print("loading: ", path)
+		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
+		self:RunString(str, "client")
+		self:RunString(str, "server")
+	end
 end
 
 function PLUGIN:onEditorKeyDown(editor, event)
