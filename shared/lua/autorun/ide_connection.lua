@@ -1,6 +1,9 @@
 -- this is supposed to be a workaround for not having sockets
 
 local function handle_line(line)
+	if World() and World():GetPlayers()[1] then
+		return easylua.RunLua(World():GetPlayers()[1], line)
+	end
 	local ok, err = loadstring(line)
 	if ok then
 		local res = {pcall(ok)}
@@ -20,7 +23,7 @@ end
 local file_name = "./ide_connection"
 local last_update = 0
 
-hook.Add("game.tick", "ide_connection", function(ent)
+hook.Add("game.tick", "ide_connection", function()
 	local time = os.clock()
 
 	if last_update < time then
