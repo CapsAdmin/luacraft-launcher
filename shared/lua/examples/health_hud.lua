@@ -5,7 +5,7 @@ hook.Add( "render.gameoverlay", "Game - Render Overlay", function()
 
 	for _,v in pairs( World():GetEntities() ) do
 		if v == me then continue end
-		
+
 		local pos = v:GetPos()
 
 		if v:IsLiving() then
@@ -19,10 +19,10 @@ hook.Add( "render.gameoverlay", "Game - Render Overlay", function()
 		surface.SetDrawColor(255, 255, 255, 255)
 
 		local dist = pos:Distance(me:GetPos())
-		
+
 		if dist <= 30 then
 			local alpha = math.Clamp( 1 - (dist/32), 0, 1 ) * 255
-			
+
 			if v:IsMob() then
 				surface.SetDrawColor(255, 0, 0, alpha)
 			elseif v:IsAnimal() then
@@ -30,7 +30,7 @@ hook.Add( "render.gameoverlay", "Game - Render Overlay", function()
 			else
 				surface.SetDrawColor(0, 0, 255, alpha)
 			end
-			
+
 			surface.DrawRect(x - 1, y - 1, 2, 2)
 
 			local text = v:GetClass()
@@ -38,11 +38,11 @@ hook.Add( "render.gameoverlay", "Game - Render Overlay", function()
 			if v:IsItem() then
 				text = v:GetItemStack():GetName()
 			end
-			
+
 			surface.SetDrawColor(255, 255, 255, alpha)
 			local w,h = font:GetSize(text)
 			font:DrawText(text, x - w / 2, y - 16, true)
-			
+
 			if v:IsLiving() then
 				local healthPerc = v:GetHealth() / v:GetMaxHealth()
 				surface.SetDrawColor(0, 0, 0, alpha)

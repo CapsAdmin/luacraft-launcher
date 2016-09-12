@@ -20,7 +20,7 @@ for event, entity_func in pairs(events) do
 end
 
 hook.Add("player.interact", "entity_events", function(ply, ent)
-	if ent and ent.OnInteract then
+	if ent and ent.OnPlayerInteract then
 		ent:OnPlayerInteract(ply)
 	end
 end)
