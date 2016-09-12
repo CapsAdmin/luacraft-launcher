@@ -5,8 +5,6 @@ local cow = World():CreateEntity("Cow")
 cow:SetPos(there)
 cow:Spawn()
 
-hook.Add("player.interact", "lol", function(ply, ent)
-	if ent == cow then
-		World():AddLightning(cow:GetPos())
-	end
-end)
+function cow:OnPlayerInteract(ply)
+	World():AddLightning(self:GetPos())
+end

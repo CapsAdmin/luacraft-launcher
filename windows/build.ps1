@@ -63,7 +63,8 @@ function build()
 	.\gradlew build | Out-Null
 	
 	mkdir run
-	
+	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\..\shared\options.txt" "$ROOT_DIR\run\options.txt"
+
 	cd ..
 }
 

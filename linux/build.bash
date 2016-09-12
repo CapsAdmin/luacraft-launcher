@@ -51,6 +51,7 @@ build ()
 	bash gradlew build
 	
 	mkdir run
+	cp -f ../../shared/options.txt run/options.txt
 	
 	cd ..
 }

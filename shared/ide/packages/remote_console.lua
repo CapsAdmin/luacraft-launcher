@@ -14,28 +14,19 @@ local env_vars = {
 
 local shellbox
 
-function PLUGIN:onIdle()
-	if self.ready then
-		local res, msg = self.socket:connect("localhost", self.port)
-		if not self.connected and res or msg == "already connected" then
-			self.connected = true
-		end
-	end
+function PLUGIN:onEditorSave(editor)
+	local path = ide:GetDocument(editor).filePath
+	path = path:match("shared/lua/(.+)") or path
+	LuacraftInput("local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()")
 end
 
 function PLUGIN:onRegister()
-	local sockets = require("socket")
-
-	self.socket = sockets.tcp()
-	self.socket:settimeout(0)
-	self.connected = false
-	self.ready = false
-	self.port = math.random(5000, 64000)
 
 	function LuacraftInput(str)
-		if self.connected then
-			self.socket:send(str)
-		end
+		local file = assert(io.open(working_directory .. "/minecraft/run/ide_connection", "ab"))
+		file:write(str)
+		file:write("\n12WD7\n")
+		file:close()
 	end
 
 	ide:AddInterpreter(PLUGIN.name, {
@@ -55,16 +46,8 @@ function PLUGIN:onRegister()
 				true,--nohide,
 				function(s) shellbox:Print(s) end,
 				nil,--uid,
-				function()
-					self.connected = false
-					self.ready = false
-					self.socket = sockets.tcp()
-					self.socket:settimeout(0)
-					self.port = math.random(5000, 64000)
-				end
+				function() end
 			)
-
-			self.ready = true
 
 			if shellbox then
 				shellbox:SetFocus()

@@ -1,0 +1,232 @@
+This mapping 'stable_20' was designed for MC 1.8.8! Use at your own peril.
+#################################################
+         ForgeGradle 2.1-SNAPSHOT-da90449        
+  https://github.com/MinecraftForge/ForgeGradle  
+#################################################
+               Powered by MCP unknown               
+             http://modcoderpack.com             
+         by: Searge, ProfMobius, Fesh0r,         
+         R4wk, ZeuX, IngisKahn, bspkrs           
+#################################################
+Found AccessTransformer: luacraft_at.cfg
+:deobfCompileDummyTask
+:deobfProvidedDummyTask
+:runClient
+[10:09:58] [main/INFO] [GradleStart]: Extra: []
+[10:09:58] [main/INFO] [GradleStart]: Running with arguments: [--userProperties, {}, --assetsDir, /home/caps/.gradle/caches/minecraft/assets, --assetIndex, 1.8, --accessToken{REDACTED}, --version, 1.8.9, --tweakClass, net.minecraftforge.fml.common.launcher.FMLTweaker, --tweakClass, net.minecraftforge.gradle.tweakers.CoremodTweaker]
+[10:09:58] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Using primary tweak class name net.minecraftforge.fml.common.launcher.FMLTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.gradle.tweakers.CoremodTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLTweaker
+[10:09:58] [main/INFO] [FML]: Forge Mod Loader version 11.15.1.1722 for Minecraft 1.8.9 loading
+[10:09:58] [main/INFO] [FML]: Java is Java HotSpot(TM) 64-Bit Server VM, version 1.8.0_102, running on Linux:amd64:4.4.0-24-generic, installed at /home/caps/luacraft-deployment/linux/jdk/jre
+[10:09:58] [main/INFO] [FML]: Managed to load a deobfuscated Minecraft name- we are in a deobfuscated environment. Skipping runtime deobfuscation
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.gradle.tweakers.CoremodTweaker
+[10:09:58] [main/INFO] [GradleStart]: Injecting location in coremod net.minecraftforge.fml.relauncher.FMLCorePlugin
+[10:09:58] [main/INFO] [GradleStart]: Injecting location in coremod net.minecraftforge.classloading.FMLForgePlugin
+[10:09:58] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLDeobfTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.gradle.tweakers.AccessTransformerTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[10:09:58] [main/ERROR] [FML]: The binary patch set is missing. Either you are in a development environment, or things are not going to work!
+[10:09:58] [main/ERROR] [FML]: FML appears to be missing any signature data. This is not a good thing
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[10:09:58] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLDeobfTweaker
+[10:09:59] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.gradle.tweakers.AccessTransformerTweaker
+[10:09:59] [main/INFO] [LaunchWrapper]: Loading tweak class name net.minecraftforge.fml.common.launcher.TerminalTweaker
+[10:09:59] [main/INFO] [LaunchWrapper]: Calling tweak class net.minecraftforge.fml.common.launcher.TerminalTweaker
+[10:09:59] [main/INFO] [LaunchWrapper]: Launching wrapped minecraft {net.minecraft.client.main.Main}
+[10:09:59] [Client thread/INFO]: Setting user: Player629
+[10:10:02] [Client thread/INFO]: LWJGL Version: 2.9.4
+[10:10:02] [Client thread/INFO] [STDOUT]: [net.minecraftforge.fml.client.SplashProgress:start:246]: ---- Minecraft Crash Report ----
+// Don't do that.
+
+Time: 9/12/16 10:10 AM
+Description: Loading screen debug info
+
+This is just a prompt for computer specs to be printed. THIS IS NOT A ERROR
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.8.9
+	Operating System: Linux (amd64) version 4.4.0-24-generic
+	Java Version: 1.8.0_102, Oracle Corporation
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Oracle Corporation
+	Memory: 383400808 bytes (365 MB) / 706740224 bytes (674 MB) up to 3724541952 bytes (3552 MB)
+	JVM Flags: 0 total; 
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	FML: 
+	Loaded coremods (and transformers): 
+	GL info: ' Vendor: 'NVIDIA Corporation' Version: '4.5.0 NVIDIA 367.44' Renderer: 'GeForce GTX 970/PCIe/SSE2'
+[10:10:03] [Client thread/INFO] [FML]: MinecraftForge v11.15.1.1722 Initialized
+[10:10:03] [Client thread/INFO] [FML]: Replaced 204 ore recipies
+[10:10:03] [Client thread/INFO] [FML]: Found 0 mods from the command line. Injecting into mod discoverer
+[10:10:03] [Client thread/INFO] [FML]: Searching /home/caps/luacraft-deployment/linux/minecraft/run/mods for mods
+[10:10:04] [Client thread/INFO] [FML]: Forge Mod Loader has identified 4 mods to load
+[10:10:04] [Client thread/INFO] [FML]: Attempting connection with missing mods [mcp, FML, Forge, luacraft] at CLIENT
+[10:10:04] [Client thread/INFO] [FML]: Attempting connection with missing mods [mcp, FML, Forge, luacraft] at SERVER
+[10:10:04] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:LuaCraft
+[10:10:05] [Client thread/INFO] [FML]: Processing ObjectHolder annotations
+[10:10:05] [Client thread/INFO] [FML]: Found 384 ObjectHolder annotations
+[10:10:05] [Client thread/INFO] [FML]: Identifying ItemStackHolder annotations
+[10:10:05] [Client thread/INFO] [FML]: Found 0 ItemStackHolder annotations
+[10:10:05] [Client thread/INFO] [FML]: Configured a dormant chunk cache size of 0
+[10:10:05] [Client thread/INFO] [FML]: Applying holder lookups
+[10:10:05] [Client thread/INFO] [FML]: Holder lookups applied
+[10:10:05] [Client thread/INFO] [FML]: Injecting itemstacks
+[10:10:05] [Client thread/INFO] [FML]: Itemstack injection complete
+[10:10:05] [Forge Version Check/INFO] [ForgeVersionCheck]: [Forge] Starting version check at http://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json
+[10:10:05] [Client thread/INFO] [STDOUT]: [tv.twitch.StandardCoreAPI:<init>:16]: If on Windows, make sure to provide all of the necessary dll's as specified in the twitchsdk README. Also, make sure to set the PATH environment variable to point to the directory containing the dll's.
+[10:10:05] [Client thread/ERROR]: Couldn't initialize twitch stream
+[10:10:05] [Sound Library Loader/INFO]: Starting up SoundSystem...
+[10:10:05] [Forge Version Check/INFO] [ForgeVersionCheck]: [Forge] Found status: UP_TO_DATE Target: null
+[10:10:05] [Thread-8/INFO]: Initializing LWJGL OpenAL
+[10:10:05] [Thread-8/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
+[10:10:05] [Thread-8/INFO]: OpenAL initialized.
+[10:10:05] [Sound Library Loader/INFO]: Sound engine started
+[10:10:06] [Client thread/INFO] [FML]: Max texture size: 16384
+[10:10:06] [Client thread/INFO]: Created: 16x16 textures-atlas
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading shared Lua...
+[10:10:07] [Client thread/WARN] [LuaCraft]: Failed to load sqlite
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading extensions
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading: lua/modules/hook.lua
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading: lua/modules/net.lua
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading: lua/extensions/math.lua
+[10:10:07] [Client thread/INFO] [LuaCraft]: Loading: lua/extensions/player.lua
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading: lua/extensions/string.lua
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading: lua/extensions/table.lua
+[10:10:08] [Client thread/INFO] [LuaCraft]: Registering packet manager
+[10:10:08] [Client thread/INFO] [LuaCraft]: Registering shared event manager
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading client Lua...
+[10:10:08] [Client thread/INFO] [LuaCraft]: Registering client event manager
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading autorun
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading: lua/autorun/easylua.lua
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading autorun/client
+[10:10:08] [Client thread/INFO] [LuaCraft]: Loading: lua/autorun/client/test.lua
+[10:10:08] [Client thread/INFO] [FML]: Injecting itemstacks
+[10:10:08] [Client thread/INFO] [FML]: Itemstack injection complete
+[10:10:08] [Client thread/INFO] [LuaCraft]: /home/caps/luacraft-deployment/linux/minecraft/run/
+[10:10:08] [Client thread/INFO] [FML]: Forge Mod Loader has successfully loaded 4 mods
+[10:10:08] [Client thread/INFO]: Reloading ResourceManager: Default, FMLFileResourcePack:Forge Mod Loader, FMLFileResourcePack:Minecraft Forge, FMLFileResourcePack:LuaCraft
+[10:10:08] [Client thread/INFO]: SoundSystem shutting down...
+[10:10:08] [Client thread/WARN]: Author: Paul Lamb, www.paulscode.com
+[10:10:08] [Sound Library Loader/INFO]: Starting up SoundSystem...
+[10:10:08] [Thread-10/INFO]: Initializing LWJGL OpenAL
+[10:10:08] [Thread-10/INFO]: (The LWJGL binding of OpenAL.  For more information, see http://www.lwjgl.org)
+[10:10:08] [Thread-10/INFO]: OpenAL initialized.
+[10:10:09] [Sound Library Loader/INFO]: Sound engine started
+[10:10:09] [Client thread/INFO] [FML]: Max texture size: 16384
+[10:10:09] [Client thread/INFO]: Created: 512x512 textures-atlas
+[10:10:11] [Realms Notification Availability checker #1/INFO]: Could not authorize you against Realms server: Invalid session id
+[10:10:36] [Server thread/INFO]: Starting integrated minecraft server version 1.8.9
+[10:10:36] [Server thread/INFO]: Generating keypair
+[10:10:36] [Server thread/INFO] [FML]: Injecting existing block and item data into this server instance
+[10:10:36] [Server thread/INFO] [FML]: Applying holder lookups
+[10:10:36] [Server thread/INFO] [FML]: Holder lookups applied
+[10:10:36] [Realms Notification Availability checker #1/INFO]: Could not authorize you against Realms server: Invalid session id
+[10:10:36] [Server thread/INFO] [FML]: Loading dimension 0 (New World) (net.minecraft.server.integrated.IntegratedServer@7b4f8cc3)
+[10:10:36] [Server thread/INFO] [FML]: Loading dimension 1 (New World) (net.minecraft.server.integrated.IntegratedServer@7b4f8cc3)
+[10:10:36] [Server thread/INFO] [FML]: Loading dimension -1 (New World) (net.minecraft.server.integrated.IntegratedServer@7b4f8cc3)
+[10:10:36] [Server thread/INFO]: Preparing start region for level 0
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading shared Lua...
+[10:10:37] [Server thread/WARN] [LuaCraft]: Failed to load sqlite
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading extensions
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/modules/hook.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/modules/net.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/extensions/math.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/extensions/player.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/extensions/string.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/extensions/table.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Registering packet manager
+[10:10:37] [Server thread/INFO] [LuaCraft]: Registering shared event manager
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading server Lua...
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading autorun
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/autorun/easylua.lua
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading autorun/server
+[10:10:37] [Server thread/INFO] [LuaCraft]: Loading: lua/autorun/server/test.lua
+[10:10:37] [Server thread/INFO]: Changing view distance to 12, from 10
+[10:10:37] [Realms Notification Availability checker #1/INFO]: Could not authorize you against Realms server: Invalid session id
+[10:10:38] [Netty Local Client IO #0/INFO] [FML]: Server protocol version 2
+[10:10:38] [Netty Server IO #1/INFO] [FML]: Client protocol version 2
+[10:10:38] [Netty Server IO #1/INFO] [FML]: Client attempting to join with 4 mods : FML@8.0.99.99,Forge@11.15.1.1722,mcp@9.19,luacraft@1.2
+[10:10:38] [Netty Local Client IO #0/INFO] [FML]: [Netty Local Client IO #0] Client side modded connection established
+[10:10:38] [Server thread/INFO] [FML]: [Server thread] Server side modded connection established
+[10:10:38] [Server thread/INFO]: Player629[local:E:4cd27ff2] logged in with entity id 322 at (87.5, 70.0, 246.5)
+[10:10:38] [Server thread/INFO]: Player629 joined the game
+[10:10:38] [Server thread/ERROR] [LuaCraft]: lua/autorun/server/test.lua:2: attempt to index global 'ply' (a nil value)
+	at func (lua/autorun/server/test.lua:2)
+	at (Unknown Function) (lua/modules/hook.lua:34)
+
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: lua/autorun/server/test.lua:2: attempt to index global 'ply' (a nil value)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at com.naef.jnlua.LuaState.lua_pcall(Native Method)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at com.naef.jnlua.LuaState.call(LuaState.java:514)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at com.luacraft.LuaEventManager.onPlayerLoggedIn(LuaEventManager.java:300)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.eventhandler.ASMEventHandler_23_LuaEventManager_onPlayerLoggedIn_PlayerLoggedInEvent.invoke(.dynamic)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.eventhandler.ASMEventHandler.invoke(ASMEventHandler.java:55)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.eventhandler.EventBus.post(EventBus.java:140)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.FMLCommonHandler.firePlayerLoggedIn(FMLCommonHandler.java:557)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.server.management.ServerConfigurationManager.initializeConnectionToPlayer(ServerConfigurationManager.java:183)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.network.handshake.NetworkDispatcher.completeServerSideConnection(NetworkDispatcher.java:242)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.network.handshake.NetworkDispatcher.access$100(NetworkDispatcher.java:54)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraftforge.fml.common.network.handshake.NetworkDispatcher$1.update(NetworkDispatcher.java:193)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:310)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:204)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:800)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:681)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:159)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:548)
+[10:10:38] [Server thread/INFO] [STDERR]: [com.luacraft.LuaCraftState:handleLuaError:137]: 	at java.lang.Thread.run(Thread.java:745)
+[10:10:39] [pool-2-thread-1/WARN]: Couldn't look up profile properties for com.mojang.authlib.GameProfile@47ae2874[id=c1896c31-8159-3c75-9e16-fc454b66b2cc,name=Player629,properties={},legacy=false]
+com.mojang.authlib.exceptions.AuthenticationException: The client has sent too many requests within a certain amount of time
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.makeRequest(YggdrasilAuthenticationService.java:65) ~[YggdrasilAuthenticationService.class:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService.fillGameProfile(YggdrasilMinecraftSessionService.java:175) [YggdrasilMinecraftSessionService.class:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService$1.load(YggdrasilMinecraftSessionService.java:59) [YggdrasilMinecraftSessionService$1.class:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService$1.load(YggdrasilMinecraftSessionService.java:56) [YggdrasilMinecraftSessionService$1.class:?]
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3524) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2317) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2280) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2195) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3934) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache.getOrLoad(LocalCache.java:3938) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache$LocalLoadingCache.get(LocalCache.java:4821) [guava-17.0.jar:?]
+	at com.google.common.cache.LocalCache$LocalLoadingCache.getUnchecked(LocalCache.java:4827) [guava-17.0.jar:?]
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService.fillProfileProperties(YggdrasilMinecraftSessionService.java:165) [YggdrasilMinecraftSessionService.class:?]
+	at net.minecraft.client.Minecraft.func_181037_M(Minecraft.java:2915) [Minecraft.class:?]
+	at net.minecraft.client.resources.SkinManager$3.run(SkinManager.java:130) [SkinManager$3.class:?]
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [?:1.8.0_102]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266) [?:1.8.0_102]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_102]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_102]
+	at java.lang.Thread.run(Thread.java:745) [?:1.8.0_102]
+[10:10:49] [Server thread/INFO] [LuaCraft]: Player629 Lua > include"sockets.lua" 
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007f5cb63862ab, pid=15993, tid=0x00007f5cd90c5700
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_102-b14) (build 1.8.0_102-b14)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.102-b14 mixed mode linux-amd64 compressed oops)
+# Problematic frame:
+# C  [core.so+0x2d2ab]  lj_tab_newkey+0x6b
+#
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# An error report file with more information is saved as:
+# /home/caps/luacraft-deployment/linux/minecraft/run/hs_err_pid15993.log
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+:runClient FAILED
+
+BUILD FAILED
+
+Total time: 55.251 secs

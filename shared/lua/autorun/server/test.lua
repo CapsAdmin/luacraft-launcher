@@ -1,3 +1,3 @@
 hook.Add("player.connect", "test", function(player)
-    ply:Msg("Hey" .. player:GetName() .. "! Welcome to luacraft!")
+    player:Msg("Hey" .. player:GetName() .. "! Welcome to luacraft!")
 end)
