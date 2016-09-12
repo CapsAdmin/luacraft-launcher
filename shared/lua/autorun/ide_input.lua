@@ -2,7 +2,11 @@
 
 local function handle_line(line)
 	if World() and World():GetPlayers()[1] then
-		return easylua.RunLua(World():GetPlayers()[1], line)
+		local ok, err = pcall(easylua.RunLua, World():GetPlayers()[1], line, true)
+		if not ok then
+			print(err)
+		end
+		return
 	end
 	local ok, err = loadstring(line)
 	if ok then
@@ -20,8 +24,18 @@ local function handle_line(line)
 	end
 end
 
-local file_name = "./ide_connection"
+local file_name = "./ide_input"
 local last_update = 0
+
+if CLIENT then
+	file_name = file_name .. "_client"
+end
+
+if SERVER then
+	file_name = file_name .. "_server"
+end
+
+os.remove(file_name)
 
 hook.Add("game.tick", "ide_connection", function()
 	local time = os.clock()

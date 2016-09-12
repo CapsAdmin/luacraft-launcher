@@ -25,7 +25,7 @@ function easylua.PCall(func, ply, ...)
 	end
 end
 
-function easylua.RunLua(ply, code)
+function easylua.RunLua(ply, code, no_print)
 	local trace = ply:GetEyeTrace()
 
 	local env = {
@@ -37,15 +37,17 @@ function easylua.RunLua(ply, code)
 		{"this", trace.HitEntity or trace.HitBlock},
 		{"block", trace.HitBlock},
 		{"world", setmetatable({}, {__index = function(_, key) local world = World() return function(...) return world[key](world, ...) end end})},
+	}
 
-		{"print", function(...)
+	if not no_print then
+		table.insert(env, {"print", function(...)
 			local args = {}
 			for i = 1, select("#", ...) do
 				table.insert(args, tostring((select(i, ...))))
 			end
 			msg(ply, table.concat(args, ", "))
-		end},
-	}
+		end})
+	end
 
 	local locals = "local "
 	for i, data in ipairs(env) do
