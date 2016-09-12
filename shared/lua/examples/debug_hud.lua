@@ -22,7 +22,7 @@ function _R.World:GetTimeString( ampm )
 		end
 		return string.format("%02d:%02d %s", hour, minute, thing)
 	end
-	
+
 	return string.format("%02d:%02d", hour, minute)
 end
 
@@ -93,11 +93,11 @@ hook.Add( "render.gameoverlay", "debug", function(dt)
 	surface.SetTexture( timeMat )
 	surface.DrawTexturedRect( 2, 2, 8, 8 )
 	font:DrawText( world:GetTimeString(true), 12, 2, true )
-	
+
 	surface.SetTexture( vectMat )
 	surface.DrawTexturedRect( 2, 12, 8, 8 )
 	font:DrawText( string.format("%d, %d", math.floor(pos.x), math.floor(pos.y)), 12, 12, true )
-	
+
 	surface.SetTexture( mapMat )
 	surface.DrawTexturedRect( 2, 22, 8, 8 )
 	font:DrawText( world:GetTopBlock(pos):GetBiome(), 12, 22, true )
