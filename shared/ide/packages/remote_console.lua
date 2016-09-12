@@ -16,7 +16,8 @@ local shellbox
 
 function PLUGIN:onEditorSave(editor)
 	local path = ide:GetDocument(editor).filePath
-	path = path:match("shared/lua/(.+)") or path
+	path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
+	ide:Print("loading: ", path)
 	LuacraftInput("local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()")
 end
 

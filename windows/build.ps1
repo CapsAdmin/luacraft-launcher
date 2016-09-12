@@ -47,7 +47,7 @@ function download($url, $dir, $move_files)
 function build()
 {
 	download $URL_JAVA "jdk" 1
-	download $URL_JAVA "minecraft"
+	download $URL_FORGE "minecraft"
 
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
 	{
@@ -59,8 +59,8 @@ function build()
 	cd minecraft
 
 	$env:JAVA_HOME = "$ROOT_DIR\jdk"
-	.\gradlew setupDecompWorkspace --refresh-dependencies | Out-Null
-	.\gradlew build | Out-Null
+	.\gradlew.bat setupDecompWorkspace --refresh-dependencies
+	.\gradlew.bat build
 	
 	mkdir run
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\..\shared\options.txt" "$ROOT_DIR\run\options.txt"
