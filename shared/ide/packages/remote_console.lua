@@ -137,8 +137,15 @@ function PLUGIN:onUnregister()
 end
 
 function PLUGIN:onEditorSave(editor)
-	self:RunScript(ide:GetDocument(editor).filePath, "client")
-	self:RunScript(ide:GetDocument(editor).filePath, "server")
+	local path = ide:GetDocument(editor).filePath
+	if path:find("^.+/client/[^/]+$") then
+		self:RunScript(path, "client")
+	elseif path:find("^.+/server/[^/]+$") then
+		self:RunScript(path, "server")
+	else
+		self:RunScript(path.filePath, "client")
+		self:RunScript(path.filePath, "server")
+	end
 end
 
 function PLUGIN:onEditorKeyDown(editor, event)
