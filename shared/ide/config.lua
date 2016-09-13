@@ -23,26 +23,3 @@ toolbar.icons = {
 }
 
 package("packages/") -- relative to config.lua
-
-do
-	local options = {
-		pauseOnLostFocus = "false",
-	}
-
-	local file_name = "../minecraft/run/options.txt"
-	local file, str
-
-	file = assert(io.open(file_name, "rb"))
-	str = file:read("*all")
-	file:close()
-
-	for k, v in pairs(options) do
-		str = str:gsub(k .. ":.-\n", k .. ":" .. v .. "\n")
-	end
-
-	os.remove(file_name)
-
-	file = io.open(file_name, "wb")
-	file:write(str)
-	file:close()
-end

@@ -5,22 +5,67 @@ local PLUGIN = {
 	version = 0.1,
 }
 
+local consoles = {
+	{
+		id = "server",
+		name = "Server Console",
+		working_directory = "../",
+		cmd_line = jit.os == "Windows" and "server.cmd" or "bash server.bash",
+		bitmap = function(self) return ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(16,16)) end,
+		tool_bar =  {
+			name = "Run On Server",
+			bitmap = function(self) return ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(24,24)) end,
+			click = function(self) self:RunScript("server", ide:GetDocument(ide:GetEditor()).filePath) end,
+		},
+		env_vars = {
+			JAVA_HOME = "../jdk",
+		},
+	},
+	{
+		id = "client",
+		name = "Client Console",
+		working_directory = "../",
+		cmd_line = jit.os == "Windows" and "client.cmd" or "bash client.bash",
+		bitmap = function(self) return ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(16,16)) end,
+		tool_bar =  {
+			name = "Run On Client",
+			bitmap = function(self) return ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(24,24)) end,
+			click = function(self) self:RunScript("client", ide:GetDocument(ide:GetEditor()).filePath) end,
+		},
+		env_vars = {
+			JAVA_HOME = "../jdk",
+		},
+	}
+}
+
+function PLUGIN:Build()
+	local file = io.open("../minecraft/src/build.gradle", "rb")
+	if file then
+		file:close()
+	else
+		wx.wxSetEnv("JAVA_HOME", "jdk")
+
+		CommandLineRun(
+			jit.os == "Windows" and "build.cmd" or "bash build.bash",
+			"../",
+			true,--tooutput,
+			true,--nohide,
+			nil,
+			"build",
+			function()
+				self:StartProcesses()
+			end
+		)
+		return true
+	end
+end
+
 local ID_START = NewID()
 local ID_STOP = NewID()
 
-local ID_RUN_SCRIPT_SERVER = NewID()
-local ID_RUN_SCRIPT_CLIENT = NewID()
-
-local working_directory = "../"
-local cmd_line = jit.os == "Windows" and "client.cmd" or "bash client.bash"
-
-local env_vars = {
-	JAVA_HOME = "../jdk",
-}
-
-function PLUGIN:RunString(str, id)
-	if self:IsRunning() then
-		local file = assert(io.open(working_directory .. "/minecraft/run/ide_input_" .. id, "ab"))
+function PLUGIN:RunString(id, str)
+	if self:IsRunning(id) then
+		local file = assert(io.open(self.consoles[id].working_directory .. "minecraft/run_"..id.."/ide_input_" .. id, "ab"))
 		file:write(str)
 		file:write("\n12WD7\n")
 		file:close()
@@ -29,122 +74,133 @@ function PLUGIN:RunString(str, id)
 	end
 end
 
-function PLUGIN:RunScript(path, where)
-	if self:IsRunning() then
+function PLUGIN:RunScript(where, path)
+	if self:IsRunning(where) then
 		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
 		ide:Print("loading: ", path)
 		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
-		self:RunString(str, where)
+		self:RunString(where, str)
 		return true
-	else
-		self:Print("Program is not launched")
 	end
 end
 
-function PLUGIN:Print(...)
-	self.client_console:Print(...)
-	self.server_console:Print(...)
-end
-
-function PLUGIN:IsRunning()
-	return self.pid ~= nil
-end
-
-function PLUGIN:StartProcess()
-	if self:IsRunning() then
-		self:Print("process already started")
+function PLUGIN:Print(id, ...)
+	if self.consoles[id] then
+		self.consoles[id].shellbox:Print(...)
 	end
-	self:Print("launching...")
+end
+
+function PLUGIN:IsRunning(id)
+	return self.consoles[id].pid and wx.wxProcess.Exists(self.consoles[id].pid)
+end
+
+function PLUGIN:StartProcess(id, cmd_line, working_directory, env_vars, on_print, on_end)
+	if self:IsRunning(id) then
+		on_print("already started")
+	end
+
+	on_print("launching...")
 
 	for k,v in pairs(env_vars) do
 		wx.wxSetEnv(k, v)
 	end
 
-	local pid = CommandLineRun(
+	self.consoles[id].pid = CommandLineRun(
 		cmd_line,
 		working_directory,
 		true,--tooutput,
 		true,--nohide,
-		function(s) self:Print(s) end
+		on_print,
+		id,
+		on_end
 	)
-
-	self.client_console:SetFocus()
-
-	self.pid = pid
 end
 
-function PLUGIN:StopProcess()
-	if self:IsRunning() then
-		self:Print("stopping...")
-
-		local pid = self.pid
-		if wx.wxProcess.Exists(self.pid) then
-			local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
-			if ret == wx.wxKILL_OK then
-			  ide:Print(TR("Program stopped (pid: %d)."):format(pid))
-			elseif ret ~= wx.wxKILL_NO_PROCESS then
-				wx.wxMilliSleep(250)
+function PLUGIN:StopProcess(id)
+	if self:IsRunning(id) then
+		self:Print("stopping "..id.."...")
+		local pid = self.consoles[id].pid
+		local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
+		if ret == wx.wxKILL_OK then
+		  ide:Print(("stopped process (pid: %d)."):format(pid))
+		elseif ret ~= wx.wxKILL_NO_PROCESS then
+			wx.wxMilliSleep(250)
 			if wx.wxProcess.Exists(pid) then
-				ide:Print(TR("Unable to stop program (pid: %d), code %d."):format(pid, ret))
+				ide:Print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
 			end
 		end
-		end
-		self.pid = nil
 	else
-		self:Print("already stopped")
-		self.client_console:Erase()
-		self.server_console:Erase()
+		self:Print(id, "already stopped")
+		for _, info in pairs(self.consoles) do
+			--info.shellbox:Erase()
+		end
+	end
+end
+
+function PLUGIN:StartProcesses()
+	if self:Build() then return end
+	for k, v in pairs(self.consoles) do
+		self:StartProcess(v.id, v.cmd_line, v.working_directory, v.env_vars, function(s) self:Print(v.id, s) end, function() self:StopProcess(v.id) end)
+	end
+end
+
+function PLUGIN:StopProcesses()
+	for k, v in pairs(self.consoles) do
+		self:StopProcess(v.id)
 	end
 end
 
 function PLUGIN:onRegister()
+	self.consoles = {}
+
 	local tb = ide:GetToolBar()
+
+	for _, info in ipairs(consoles) do
+		self.consoles[info.id] = info
+
+		info.wx_id = NewID()
+
+		info.tool_bar.tool = tb:AddTool(info.wx_id, info.tool_bar.name, info.tool_bar.bitmap(self))
+		ide:GetMainFrame():Connect(info.wx_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+			info.tool_bar.click(self)
+		end)
+
+		info.shellbox, self.server_page = self:CreateRemoteConsole(info.name, function(str)
+			self:RunString("server", str)
+		end, info.bitmap(self))
+	end
 
     self.tool_start = tb:AddTool(ID_START, "Start", ide:GetBitmap("DEBUG-START", "TOOLBAR", wx.wxSize(24,24)))
 	ide:GetMainFrame():Connect(ID_START, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		self:StartProcess()
+		self:StartProcesses()
 	end)
-
 
     self.tool_stop = tb:AddTool(ID_STOP, "Stop", ide:GetBitmap("DEBUG-STOP", "TOOLBAR", wx.wxSize(24,24)))
 	ide:GetMainFrame():Connect(ID_STOP, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		self:StopProcess()
-	end)
-
-	self.tool_run_script_server = tb:AddTool(ID_RUN_SCRIPT_SERVER, "Run On Server", ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(24,24)))
-	ide:GetMainFrame():Connect(ID_RUN_SCRIPT_SERVER, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		self:RunScript(ide:GetDocument(ide:GetEditor()).filePath, "server")
-	end)
-
-	self.tool_run_script_client = tb:AddTool(ID_RUN_SCRIPT_CLIENT, "Run On Client", ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(24,24)))
-	ide:GetMainFrame():Connect(ID_RUN_SCRIPT_CLIENT, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		self:RunScript(ide:GetDocument(ide:GetEditor()).filePath, "client")
+		self:StopProcesses()
 	end)
 
 	tb:Realize()
-
-	self.server_console, self.server_page = self:CreateRemoteConsole("Server Console", function(str) self:RunString(str, "server") end, ide:GetBitmap("DIR-SETUP-FILE", "TOOLBAR", wx.wxSize(16,16)))
-	self.client_console, self.client_page = self:CreateRemoteConsole("Client Console", function(str) self:RunString(str, "client") end, ide:GetBitmap("DIR-SETUP", "TOOLBAR", wx.wxSize(16,16)))
 end
 
 function PLUGIN:onUnregister()
 	local tb = ide:GetToolBar()
-    tb:DeleteTool(self.tool_start)
-    tb:DeleteTool(self.tool_stop)
+	for _, info in ipairs(self.consoles) do
+		tb:DeleteTool(info.tool_bar.tool)
+	end
 	tb:Realize()
-
-	self:StopProcess()
+	self:StopProcesses()
 end
 
 function PLUGIN:onEditorSave(editor)
 	local path = ide:GetDocument(editor).filePath
 	if path:find("^.+/client/[^/]+$") then
-		self:RunScript(path, "client")
+		self:RunScript("client", path)
 	elseif path:find("^.+/server/[^/]+$") then
-		self:RunScript(path, "server")
+		self:RunScript("server", path)
 	else
-		self:RunScript(path.filePath, "client")
-		self:RunScript(path.filePath, "server")
+		self:RunScript("client", path.filePath)
+		self:RunScript("server", path.filePath)
 	end
 end
 
@@ -154,9 +210,9 @@ function PLUGIN:onEditorKeyDown(editor, event)
 
 	if keycode == wx.WXK_F5 or keycode == wx.WXK_F6 then
 		if mod == wx.wxMOD_SHIFT then
-			self:StopProcess()
+			self:StopProcesses()
 		else
-			self:StartProcess()
+			self:StartProcesses()
 		end
 		return false
 	end

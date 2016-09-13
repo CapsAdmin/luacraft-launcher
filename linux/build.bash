@@ -14,46 +14,70 @@ download ()
 	dir=$2
 	move_files=$3
    
-	if [ -d "$ROOT_DIR/$dir" ]; then
-		echo "folder $dir already exists. skipping"
-	else
-		rm -f "$ROOT_DIR/temp.zip"
-		temp_file="$ROOT_DIR/temp.zip"
-		out_dir="$ROOT_DIR/$dir"
-		
-		echo "downloading $url to temp.zip"
-		wget "$url" -O temp.zip
-		unzip temp.zip -d "$out_dir"
-		
-		if [ -n "$move_files" ]; then
-			mv $out_dir/*/* $out_dir/
-		fi
-		
-		rm -f "$ROOT_DIR/temp.zip"
+	rm -f "$ROOT_DIR/temp.zip"
+	temp_file="$ROOT_DIR/temp.zip"
+	out_dir="$ROOT_DIR/$dir"
+	
+	echo "downloading $url to temp.zip"
+	wget "$url" -O temp.zip
+	unzip temp.zip -d "$out_dir"
+	
+	if [ -n "$move_files" ]; then
+		mv -f $out_dir/*/* $out_dir/
 	fi
+	
+	rm -f "$ROOT_DIR/temp.zip"
 }
 
 build ()
 {
-	download $URL_FORGE "minecraft"
-	download $URL_JAVA "jdk" 1
-
-	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
-		rm -rf "$ROOT_DIR/minecraft/src"
+	#if minecraft/src/build.gradle does not exist 
+	# just delete the whole folder and redownload
+	if ! [ -f "$ROOT_DIR/minecraft/build.gradle" ]; then
+		rm -rf "$ROOT_DIR/minecraft"
 	fi
-
-	download $URL_LUACRAFT "minecraft/src" 1
-
-	cd minecraft
+	
+	if ! [ -f "$ROOT_DIR/jdk/bin/java" ]; then
+		download $URL_JAVA "jdk" 1
+	fi
+	
+	if ! [ -f "$ROOT_DIR/minecraft/build.gradle" ]; then
+		download $URL_FORGE "minecraft"
+		sed -i "/runDir = / s/=.*/= run_dir/" $ROOT_DIR/minecraft/build.gradle
+		rm -rf $ROOT_DIR/minecraft/src
+	fi
+	
+	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
+		download $URL_LUACRAFT "minecraft/src" 1
+		sed -i "/runDir = / s/=.*/= run_dir/" $ROOT_DIR/minecraft/src/build.gradle
+	fi	
 
 	export JAVA_HOME="$ROOT_DIR/jdk"
-	bash gradlew setupDecompWorkspace --refresh-dependencies
-	bash gradlew build
 	
-	mkdir -p $ROOT_DIR/minecraft/run
-	cp -f $ROOT_DIR/../shared/options.txt $ROOT_DIR/minecraft/run/options.txt
-	
+	cd minecraft
+		bash gradlew setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
+		bash gradlew build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 	cd ..
+	
+	mkdir -p $ROOT_DIR/minecraft/run_client
+	mkdir -p $ROOT_DIR/minecraft/run_server
+	
+	#remove any previous home and cache folders
+	rm -rf $ROOT_DIR/minecraft/.cache_client
+	rm -rf $ROOT_DIR/minecraft/.home_client
+	rm -rf $ROOT_DIR/minecraft/.cache_server
+	rm -rf $ROOT_DIR/minecraft/.home_server
+	
+	#duplicate the home and cache folders to client and server to prevent crashing and file lock errors
+	cp -r -f $ROOT_DIR/minecraft/.cache_shared $ROOT_DIR/minecraft/.cache_client
+	cp -r -f $ROOT_DIR/minecraft/.cache_shared $ROOT_DIR/minecraft/.cache_server
+	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_server
+	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_client
+	
+	#some default properties
+	echo -e "pauseOnLostFocus:false\n" > $ROOT_DIR/minecraft/run_client/options.txt
+	echo -e "eula=true\n" > $ROOT_DIR/minecraft/run_server/eula.txt
+	echo -e "online-mode=false\n" > $ROOT_DIR/minecraft/run_server/server.properties
 }
 
 update_luacraft()
@@ -62,6 +86,17 @@ update_luacraft()
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/minecraft/src
 	rm -r -f $ROOT_DIR/temp/
 	build
+}
+
+link_folders()
+{	
+	if ! [ -e "$ROOT_DIR/minecraft/run_$1/addons" ]; then
+		ln -s -d $ROOT_DIR/../shared/addons/ minecraft/run_$1/addons
+	fi
+
+	if ! [ -e "$ROOT_DIR/minecraft/run_$1/lua" ]; then
+		ln -s -d $ROOT_DIR/../shared/lua/ minecraft/run_$1/lua
+	fi
 }
 
 if [ "$1" == "build" ] || [ "$1" == "" ]; then
@@ -80,13 +115,10 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 		build
 	fi
 
-	if ! [ -e "$ROOT_DIR/minecraft/run/addons" ]; then
-		ln -s -d $ROOT_DIR/../shared/addons/ minecraft/run/addons
-	fi
-
-	if ! [ -e "$ROOT_DIR/minecraft/run/lua" ]; then
-		ln -s -d $ROOT_DIR/../shared/lua/ minecraft/run/lua
-	fi
+	link_folders client
+	link_folders server
+	
+	export JAVA_HOME="$ROOT_DIR/jdk"
 	
 	if [ "$1" == "client" ]; then
 		run=runClient
@@ -94,9 +126,8 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 		run=runServer
 	fi
 	
-	cd minecraft	
-	export JAVA_HOME="$ROOT_DIR/jdk"
-	bash gradlew $run -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	cd minecraft
+		bash gradlew $run -Prun_dir="run_$1" --project-cache-dir .cache_$1 --gradle-user-home .home_$1 -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	cd ..
 fi
 
@@ -110,11 +141,13 @@ if [ "$1" == "update" ]; then
 	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
 	rm -r -f $ROOT_DIR/temp/
 	
-	update_luacraft
+	if [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
+		update_luacraft
+	fi
 fi
 
 if [ "$1" == "update_luacraft" ]; then
-	update_luacraft()
+	update_luacraft
 fi
 
 if [ "$1" == "clean" ]; then
