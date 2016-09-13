@@ -92,8 +92,8 @@ function build()
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.home_shared" "$ROOT_DIR\minecraft\.home_client"
 		
 	#some default properties
-	"pauseOnLostFocus:false`n" | Out-File "$ROOT_DIR\minecraft\run_client\options.txt"
-	"online-mode=false`n" | Out-File "$ROOT_DIR\minecraft\run_server\server.properties"
+	Add-Content "$ROOT_DIR\minecraft\run_client\options.txt" "pauseOnLostFocus:false"
+	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false"
 }
 
 function update_luacraft()
@@ -148,12 +148,7 @@ if($arg -eq "client" -Or $arg -eq "server") {
 	}
 	elseif ($arg -eq "server") {
 		$run="runServer"
-		if(!(Test-Path "$ROOT_DIR\minecraft\run_server\eula.txt")) {
-			Set-Location minecraft
-				.\gradlew $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
-			Set-Location ..
-		}
-		(Get-Content "$ROOT_DIR\minecraft\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\build.gradle"
+		Add-Content "$ROOT_DIR\minecraft\run_server\eula.txt" "eula=true"
 	}
 	
 	Set-Location minecraft
