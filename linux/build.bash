@@ -76,7 +76,6 @@ build ()
 	
 	#some default properties
 	echo -e "pauseOnLostFocus:false\n" > $ROOT_DIR/minecraft/run_client/options.txt
-	echo -e "eula=true\n" > $ROOT_DIR/minecraft/run_server/eula.txt
 	echo -e "online-mode=false\n" > $ROOT_DIR/minecraft/run_server/server.properties
 }
 
@@ -124,6 +123,7 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 		run=runClient
 	elif [ "$1" == "server" ]; then
 		run=runServer
+		echo -e "eula=true\n" > $ROOT_DIR/minecraft/run_server/eula.txt
 	fi
 	
 	cd minecraft

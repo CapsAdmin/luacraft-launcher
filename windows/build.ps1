@@ -42,7 +42,7 @@ function download($url, $dir, $move_files)
 	
 	if ($move_files)
 	{
-		Move-Item -Path "$out_dir\*\*" -Destination "$out_dir"
+		Move-Item -Force -Path "$out_dir\*\*" -Destination "$out_dir"
 	}
 }
 
@@ -61,7 +61,7 @@ function build()
 	if(!(Test-Path "$ROOT_DIR\minecraft\gradle.build")) {
 		download $URL_FORGE "minecraft"	
 		(Get-Content "$ROOT_DIR\minecraft\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\build.gradle"
-		remove_folder "$ROOT_DIR\minecraft\src" 
+		remove_folder "$ROOT_DIR\minecraft\src"
 	}
 	
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\gradle.build")) {
@@ -93,7 +93,6 @@ function build()
 		
 	#some default properties
 	"pauseOnLostFocus:false`n" | Out-File "$ROOT_DIR\minecraft\run_client\options.txt"
-	"eula=true`n" | Out-File "$ROOT_DIR\minecraft\run_server\eula.txt"
 	"online-mode=false`n" | Out-File "$ROOT_DIR\minecraft\run_server\server.properties"
 }
 
@@ -149,6 +148,12 @@ if($arg -eq "client" -Or $arg -eq "server") {
 	}
 	elseif ($arg -eq "server") {
 		$run="runServer"
+		if(!(Test-Path "$ROOT_DIR\minecraft\run_server\eula.txt")) {
+			Set-Location minecraft
+				.\gradlew $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+			Set-Location ..
+		}
+		(Get-Content "$ROOT_DIR\minecraft\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\build.gradle"
 	}
 	
 	Set-Location minecraft
