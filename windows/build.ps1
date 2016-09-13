@@ -9,8 +9,11 @@ $arg = $env:arg
 
 function remove_folder($folder)
 {
-	Get-ChildItem -Path "$folder\\*" -Recurse | Remove-Item -Force -Recurse
-	Remove-Item $folder
+	if(Test-Path "$folder")
+	{
+		Get-ChildItem -Path "$folder\\*" -Recurse -Force -Confirm:$false | Remove-Item -Force -Recurse -Confirm:$false
+		Remove-Item $folder -Recurse -Force | Write-Host
+	}
 }
 
 function download($url, $dir, $move_files)
@@ -57,7 +60,7 @@ function build()
 
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
 	{
-		remove_folder "$ROOT_DIR\minecraft\src\"
+		remove_folder "$ROOT_DIR\minecraft\src"
 	}
 
 	download $URL_LUACRAFT "minecraft\src" 1
@@ -81,7 +84,7 @@ function update_luacraft()
 {
 	download $URL_LUACRAFT "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
-	remove_folder "$ROOT_DIR\temp\"
+	remove_folder "$ROOT_DIR\temp"
 	
 	build
 }
@@ -159,5 +162,5 @@ if($arg -eq "clean")
 	remove_folder "$ROOT_DIR\ide"
 	remove_folder "$ROOT_DIR\jdk"
 	remove_folder "$ROOT_DIR\minecraft"
-	remove_folder "$ROOT_DIR\temp.zip"
+	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\temp.zip"
 }
