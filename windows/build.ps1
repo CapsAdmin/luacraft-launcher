@@ -35,14 +35,14 @@ function download($url, $dir, $move_files)
 	
 	foreach($item in $zip.items())
 	{
-		$shell.Namespace("$ROOT_DIR\$dir").copyhere($item)
+		$shell.Namespace($out_dir).CopyHere($item, 0x14)
 	}
 	
 	Remove-Item $temp_file -ErrorAction SilentlyContinue
 	
 	if ($move_files)
 	{
-		Move-Item -Force -Path "$out_dir\*\*" -Destination "$out_dir"
+		Move-Item -Confirm:$false -Force -Path "$out_dir\*\*" -Destination "$out_dir"
 	}
 }
 
@@ -99,7 +99,7 @@ function build()
 function update_luacraft()
 {
 	download $URL_LUACRAFT "temp"
-	Copy-Item -Force -Recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
+	Copy-Item -Force -Recurse -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
 	remove_folder "$ROOT_DIR\temp"
 	
 	build
@@ -163,7 +163,7 @@ if($arg -eq "update") {
 	remove_folder "$ROOT_DIR\..\shared\lua\autorun"
 
 	download $URL_REPO "temp"
-	Copy-Item -Force -Recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
+	Copy-Item -Force -Recurse -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
 	remove_folder "$ROOT_DIR\temp"
 	
 	if(Test-Path "$ROOT_DIR\minecraft\src\build.gradle") {
