@@ -11,11 +11,7 @@ function remove_folder($folder)
 {
 	if(Test-Path "$folder")
 	{
-<<<<<<< HEAD
 		Get-ChildItem -Path "$folder\\*" -Recurse -Force | Remove-Item -Force -Recurse -Confirm:$false
-=======
-		Get-ChildItem -Path "$folder\\*" -Recurse -Force -Confirm:$false | Remove-Item -Force -Recurse -Confirm:$false
->>>>>>> 6845081baa565735b69ec3cc618ff9d954f81e9c
 		Remove-Item $folder -Recurse -Force | Write-Host
 	}
 }
