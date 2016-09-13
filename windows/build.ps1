@@ -73,6 +73,8 @@ function update_luacraft()
 	download $URL_LUACRAFT "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
 	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\"
+	
+	build
 }
 
 if($arg -eq "build")
