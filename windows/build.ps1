@@ -68,7 +68,10 @@ function build()
 	.\gradlew.bat setupDecompWorkspace --refresh-dependencies
 	.\gradlew.bat build
 	
-	New-Item -ItemType directory -Path $ROOT_DIR\minecraft\run
+	if(!(Test-Path "$ROOT_DIR\minecraft\run"))
+	{
+		New-Item -ItemType directory -Path $ROOT_DIR\minecraft\run
+	}
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\..\shared\options.txt" "$ROOT_DIR\minecraft\run\options.txt"
 
 	Set-Location ..
