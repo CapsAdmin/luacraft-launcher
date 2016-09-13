@@ -7,6 +7,12 @@ $URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 $arg = $env:arg
 
+function remove_folder($folder)
+{
+	Get-ChildItem -Path "$folder\\*" -Recurse | Remove-Item -Force -Recurse
+	Remove-Item $folder
+}
+
 function download($url, $dir, $move_files)
 {
 	if(Test-Path "$ROOT_DIR\$dir")
@@ -51,7 +57,7 @@ function build()
 
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle"))
 	{
-		Remove-Item minecraft\src\ -ErrorAction SilentlyContinue -Recurse:$true
+		remove_folder "$ROOT_DIR\minecraft\src\"
 	}
 
 	download $URL_LUACRAFT "minecraft\src" 1
@@ -72,7 +78,7 @@ function update_luacraft()
 {
 	download $URL_LUACRAFT "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\"
+	remove_folder "$ROOT_DIR\temp\"
 	
 	build
 }
@@ -128,14 +134,14 @@ if($arg -eq "client" -Or $arg -eq "server")
 
 if($arg -eq "update")
 {
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\ide
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\examples
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\tutorial
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force  $ROOT_DIR\..\shared\lua\autorun
+	remove_folder "$ROOT_DIR\..\shared\ide"
+	remove_folder "$ROOT_DIR\..\shared\lua\examples"
+	remove_folder "$ROOT_DIR\..\shared\lua\tutorial"
+	remove_folder "$ROOT_DIR\..\shared\lua\autorun"
 
 	download $URL_REPO "temp"
 	Copy-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -force -recurse "$ROOT_DIR\temp"
+	remove_folder "$ROOT_DIR\temp"
 	
 	update_luacraft
 }
@@ -147,8 +153,8 @@ if($arg -eq "update_luacraft")
 
 if($arg -eq "clean")
 {
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\ide"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\jdk"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\minecraft"
-	Remove-Item -ErrorAction SilentlyContinue -Confirm:$false -recurse -force "$ROOT_DIR\temp.zip"
+	remove_folder "$ROOT_DIR\ide"
+	remove_folder "$ROOT_DIR\jdk"
+	remove_folder "$ROOT_DIR\minecraft"
+	remove_folder "$ROOT_DIR\temp.zip"
 }
