@@ -103,7 +103,9 @@ if [ "$1" == "build" ] || [ "$1" == "" ]; then
 fi
 
 if [ "$1" == "ide" ]; then
-	download $URL_IDE "ide" 1
+	if ! [ -f "$ROOT_DIR/ide/zbstudio.sh" ]; then
+		download $URL_IDE "ide" 1
+	fi
 
 	cd ide/
 	./zbstudio.sh -cfg ../../shared/ide/config.lua
