@@ -22,7 +22,7 @@ function PLUGIN:onAppLoad()
 		local obj = wx.wxFileName(default_project_dir)
 		obj:Normalize()
 
-		ProjectUpdateProjectDir(obj:GetFullPath())
+		ide:SetProject(obj:GetFullPath())
 	end
 
 	if default_file then
@@ -32,7 +32,7 @@ function PLUGIN:onAppLoad()
 	end
 
 	if default_interpreter then
-		ProjectSetInterpreter("luacraft")
+		ide:SetInterpreter("luacraft")
 	end
 end
 
