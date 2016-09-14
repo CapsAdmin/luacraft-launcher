@@ -74,9 +74,11 @@ build ()
 	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_server
 	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_client
 	
+	world_seed="3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake"
+
 	#some default properties
 	echo -e "pauseOnLostFocus:false\n" > $ROOT_DIR/minecraft/run_client/options.txt
-	echo -e "online-mode=false\n" > $ROOT_DIR/minecraft/run_server/server.properties
+	echo -e "online-mode=false\nlevel-type=CUSTOMIZED\ngenerator-settings="$world_seed"\n" > $ROOT_DIR/minecraft/run_server/server.properties
 }
 
 update_luacraft()
@@ -90,11 +92,11 @@ update_luacraft()
 link_folders()
 {	
 	if ! [ -e "$ROOT_DIR/minecraft/run_$1/addons" ]; then
-		ln -s -d $ROOT_DIR/../shared/addons/ minecraft/run_$1/addons
+		ln -s -d $ROOT_DIR/../shared/addons/ $ROOT_DIR/minecraft/run_$1/addons
 	fi
 
 	if ! [ -e "$ROOT_DIR/minecraft/run_$1/lua" ]; then
-		ln -s -d $ROOT_DIR/../shared/lua/ minecraft/run_$1/lua
+		ln -s -d $ROOT_DIR/../shared/lua/ $ROOT_DIR/minecraft/run_$1/lua
 	fi
 }
 

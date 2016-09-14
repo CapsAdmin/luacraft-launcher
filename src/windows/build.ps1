@@ -91,9 +91,11 @@ function build()
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.home_shared" "$ROOT_DIR\minecraft\.home_server"
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.home_shared" "$ROOT_DIR\minecraft\.home_client"
 		
+	$world_seed="3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake"
+
 	#some default properties
 	Add-Content "$ROOT_DIR\minecraft\run_client\options.txt" "pauseOnLostFocus:false"
-	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false"
+	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings="$world_seed"`n"
 }
 
 function update_luacraft()
