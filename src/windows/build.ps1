@@ -7,7 +7,7 @@ $URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 $ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 $arg = $env:arg
 
-function remove_folder($folder)
+function Remove-Folder($folder)
 {
 	if(Test-Path "$folder")
 	{
@@ -16,118 +16,130 @@ function remove_folder($folder)
 	}
 }
 
-function download($url, $dir, $move_files)
+function fetch($url, $zip_name, $dir, $move_files)
 {
-	$temp_file = "$ROOT_DIR\temp.zip"
-	$out_dir = "$ROOT_DIR\$dir"
-	
-	Write-Output "downloading $url to $temp_file"			
-	(New-Object System.Net.WebClient).DownloadFile($url, $temp_file)		
-	
-	Write-Output "extracting $temp_file to $out_dir"
-	$shell = new-object -com shell.application
-	$zip = $shell.NameSpace($temp_file)
-	
-	if (!(Test-Path $out_dir)) 
-	{		
-		New-Item -ItemType directory -Path $out_dir
+	$file = "$ROOT_DIR\$zip_name.zip"
+
+	Write-Output $file
+
+	if(!(Test-Path "$file")) {
+		Write-Output "downloading $url to $file"
+		(New-Object System.Net.WebClient).DownloadFile($url, $file)
 	}
-	
+
+	Remove-Folder $dir
+
+	$shell = new-object -com shell.application
+	$zip = $shell.NameSpace($file)
+
+	if (!(Test-Path $dir))
+	{
+		New-Item -ItemType directory -Path $dir
+	}
+
 	foreach($item in $zip.items())
 	{
-		$shell.Namespace($out_dir).CopyHere($item, 0x14)
+		$shell.Namespace($dir).CopyHere($item, 0x14)
 	}
-	
-	Remove-Item $temp_file -ErrorAction SilentlyContinue
-	
+
 	if ($move_files)
 	{
-		Move-Item -Confirm:$false -Force -Path "$out_dir\*\*" -Destination "$out_dir"
+		Move-Item -Confirm:$false -Force -Path "$dir\*\*" -Destination "$dir"
 	}
 }
 
 function build()
 {
-	#if minecraft/src/build.gradle does not exist 
+	Write-Output "building luacraft..."
+
+	#if minecraft/src/build.gradle does not exist
 	# just delete the whole folder and redownload
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle")) {
-		remove_folder "$ROOT_DIR\minecraft\src"
+		Remove-Folder "$ROOT_DIR\minecraft\src"
 	}
 
 	if(!(Test-Path "$ROOT_DIR\jdk\bin\java.exe")) {
-		download $URL_JAVA "jdk" 1
+		fetch $URL_JAVA jdk "$ROOT_DIR\jdk" 1
+		Remove-Item "$ROOT_DIR\jdk\src.zip" -ErrorAction SilentlyContinue
+	} else {
+		echo "java is already downloaded"
 	}
-	
+
 	if(!(Test-Path "$ROOT_DIR\minecraft\gradle.build")) {
-		download $URL_FORGE "minecraft"	
+		fetch $URL_FORGE forge "$ROOT_DIR\minecraft"
 		(Get-Content "$ROOT_DIR\minecraft\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\build.gradle"
-		remove_folder "$ROOT_DIR\minecraft\src"
+		Remove-Folder "$ROOT_DIR\minecraft\src"
+	} else {
+		echo "forge is already downloaded"
 	}
-	
+
 	if(!(Test-Path "$ROOT_DIR\minecraft\src\gradle.build")) {
-		download $URL_LUACRAFT "minecraft\src" 1
+		fetch $URL_LUACRAFT luacraft "$ROOT_DIR\minecraft\src" 1
 		(Get-Content "$ROOT_DIR\minecraft\src\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\src\build.gradle"
+	} else {
+		echo "luacraft is already downloaded"
 	}
-	
+
 	$env:JAVA_HOME = "$ROOT_DIR\jdk"
-	
 	Set-Location minecraft
 		.\gradlew.bat setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --refresh-dependencies --project-cache-dir .cache_shared --gradle-user-home .home_shared
 		.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 	Set-Location ..
-	
+
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\minecraft\run_client"
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\minecraft\run_server"
-	
+
 	#remove any previous home and cache folders
-	remove_folder "$ROOT_DIR\minecraft\.cache_client"
-	remove_folder "$ROOT_DIR\minecraft\.home_client"
-	remove_folder "$ROOT_DIR\minecraft\.cache_server"
-	remove_folder "$ROOT_DIR\minecraft\.home_server"
-	
+	Remove-Folder "$ROOT_DIR\minecraft\.cache_client"
+	Remove-Folder "$ROOT_DIR\minecraft\.home_client"
+	Remove-Folder "$ROOT_DIR\minecraft\.cache_server"
+	Remove-Folder "$ROOT_DIR\minecraft\.home_server"
+
 	#duplicate the home and cache folders to client and server to prevent crashing and file lock errors
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.cache_shared" "$ROOT_DIR\minecraft\.cache_client"
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.cache_shared" "$ROOT_DIR\minecraft\.cache_server"
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.home_shared" "$ROOT_DIR\minecraft\.home_server"
 	Copy-Item -Force -Recurse "$ROOT_DIR\minecraft\.home_shared" "$ROOT_DIR\minecraft\.home_client"
-		
+
 	$world_seed="3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake"
 
 	#some default properties
 	Add-Content "$ROOT_DIR\minecraft\run_client\options.txt" "pauseOnLostFocus:false"
 	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings="$world_seed"`n"
+
+	Write-Output "finished building luacraft"
 }
 
 function update_luacraft()
 {
-	download $URL_LUACRAFT "temp"
+	Remove-Item "$ROOT_DIR\luacraft.zip" -ErrorAction SilentlyContinue
+
+	fetch $URL_LUACRAFT temp "$ROOT_DIR\temp"
+	Remove-Item "$ROOT_DIR\temp.zip" -ErrorAction SilentlyContinue
+
 	Copy-Item -Force -Recurse -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\minecraft\src"
-	remove_folder "$ROOT_DIR\temp"
-	
+	Remove-Folder "$ROOT_DIR\temp"
+
 	build
 }
 
 function link_folders($what)
 {
-	if(!(Test-Path "$ROOT_DIR\minecraft\run_$what\addons")) {
-		cmd /c mklink /d /j "$ROOT_DIR\minecraft\run_$what\addons" "$ROOT_DIR\..\shared\addons" 
-	}
-	
-	if(!(Test-Path "$ROOT_DIR\minecraft\run_$what\lua")) {
-		cmd /c mklink /d /j "$ROOT_DIR\minecraft\run_$what\lua" "$ROOT_DIR\..\shared\lua" 
-	}	
+	cmd /c rmdir "$ROOT_DIR\minecraft\run_$what\addons"
+	cmd /c mklink /d /j "$ROOT_DIR\minecraft\run_$what\addons" "$ROOT_DIR\..\shared\addons"
+
+	cmd /c rmdir "$ROOT_DIR\minecraft\run_$what\lua"
+	cmd /c mklink /d /j "$ROOT_DIR\minecraft\run_$what\lua" "$ROOT_DIR\..\shared\lua"
 }
 
-if($arg -eq "build")
-{
+if($arg -eq "build") {
 	build
 }
 
-if($arg -eq "ide")
-{
+if($arg -eq "ide") {
 	if(!(Test-Path "$ROOT_DIR\ide\zbstudio.exe"))
 	{
-		download $URL_IDE "ide" 1
+		fetch $URL_IDE ide "$ROOT_DIR\ide" 1
 	}
 
 	Set-Location ide
@@ -139,35 +151,35 @@ if($arg -eq "client" -Or $arg -eq "server") {
 	if(!(Test-Path "$ROOT_DIR\minecraft")) {
 		build
 	}
-	
+
 	link_folders "client"
 	link_folders "server"
-	
-	$env:JAVA_HOME = "$ROOT_DIR\jdk"
-	
+
 	if($arg -eq "client") {
 		$run="runClient"
-	}
-	elseif ($arg -eq "server") {
+	} elseif ($arg -eq "server") {
 		$run="runServer"
 		Add-Content "$ROOT_DIR\minecraft\run_server\eula.txt" "eula=true"
 	}
-	
+
+	$env:JAVA_HOME = "$ROOT_DIR\jdk"
 	Set-Location minecraft
 		.\gradlew $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	Set-Location ..
 }
 
 if($arg -eq "update") {
-	remove_folder "$ROOT_DIR\..\shared\ide"
-	remove_folder "$ROOT_DIR\..\shared\lua\examples"
-	remove_folder "$ROOT_DIR\..\shared\lua\tutorial"
-	remove_folder "$ROOT_DIR\..\shared\lua\autorun"
+	Remove-Folder "$ROOT_DIR\..\shared\ide"
+	Remove-Folder "$ROOT_DIR\..\shared\lua\examples"
+	Remove-Folder "$ROOT_DIR\..\shared\lua\tutorial"
+	Remove-Folder "$ROOT_DIR\..\shared\lua\autorun"
 
-	download $URL_REPO "temp"
+	fetch $URL_REPO temp "$ROOT_DIR\temp"
+	Remove-Item -Recurse -Force "$ROOT_DIR\temp.zip"
+
 	Copy-Item -Force -Recurse -Confirm:$false "$ROOT_DIR\temp\*\*" "$ROOT_DIR\..\"
-	remove_folder "$ROOT_DIR\temp"
-	
+	Remove-Folder "$ROOT_DIR\temp"
+
 	if(Test-Path "$ROOT_DIR\minecraft\src\build.gradle") {
 		update_luacraft
 	}
@@ -178,8 +190,8 @@ if($arg -eq "update_luacraft") {
 }
 
 if($arg -eq "clean") {
-	remove_folder "$ROOT_DIR\ide"
-	remove_folder "$ROOT_DIR\jdk"
-	remove_folder "$ROOT_DIR\minecraft"
+	Remove-Folder "$ROOT_DIR\ide"
+	Remove-Folder "$ROOT_DIR\jdk"
+	Remove-Folder "$ROOT_DIR\minecraft"
 	Remove-Item -Recurse -Force "$ROOT_DIR\temp.zip"
 }

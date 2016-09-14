@@ -8,96 +8,108 @@ URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-download () 
+fetch ()
 {
 	url=$1
-	dir=$2
-	move_files=$3
-   
-	rm -f "$ROOT_DIR/temp.zip"
-	temp_file="$ROOT_DIR/temp.zip"
-	out_dir="$ROOT_DIR/$dir"
-	
-	echo "downloading $url to temp.zip"
-	wget "$url" -O temp.zip
-	unzip temp.zip -d "$out_dir"
-	
-	if [ -n "$move_files" ]; then
-		mv -f $out_dir/*/* $out_dir/
+	zip_name=$2
+	dir=$3
+	move_files=$4
+
+	if ! [ -f "$ROOT_DIR/$zip_name.zip" ]; then
+		echo "downloading $url to $zip_name.zip"
+		wget "$url" -O "$ROOT_DIR/$zip_name.zip"
 	fi
-	
-	rm -f "$ROOT_DIR/temp.zip"
+
+	rm -rf "$dir"
+	unzip "$ROOT_DIR/$zip_name.zip" -d "$dir"
+
+	if [ -n "$move_files" ]; then
+		mv -f $dir/*/* "$dir/"
+	fi
 }
 
 build ()
 {
-	#if minecraft/src/build.gradle does not exist 
+	echo "building luacraft..."
+
+	#if minecraft/src/build.gradle does not exist
 	# just delete the whole folder and redownload
 	if ! [ -f "$ROOT_DIR/minecraft/build.gradle" ]; then
 		rm -rf "$ROOT_DIR/minecraft"
 	fi
-	
-	if ! [ -f "$ROOT_DIR/jdk/bin/java" ]; then
-		download $URL_JAVA "jdk" 1
-	fi
-	
-	if ! [ -f "$ROOT_DIR/minecraft/build.gradle" ]; then
-		download $URL_FORGE "minecraft"
-		sed -i "/runDir = / s/=.*/= run_dir/" $ROOT_DIR/minecraft/build.gradle
-		rm -rf $ROOT_DIR/minecraft/src
-	fi
-	
-	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
-		download $URL_LUACRAFT "minecraft/src" 1
-		sed -i "/runDir = / s/=.*/= run_dir/" $ROOT_DIR/minecraft/src/build.gradle
-	fi	
 
-	export JAVA_HOME="$ROOT_DIR/jdk"
-	
-	cd minecraft
+	if ! [ -f "$ROOT_DIR/jdk/bin/java" ]; then
+		fetch $URL_JAVA jdk "$ROOT_DIR/jdk" 1
+		rm -f "$ROOT_DIR/jdk/src.zip" #not needed
+	else
+		echo "jdk is already downloaded"
+	fi
+
+	if ! [ -f "$ROOT_DIR/minecraft/build.gradle" ]; then
+		fetch $URL_FORGE forge "$ROOT_DIR/minecraft"
+		sed -i "/runDir = / s/=.*/= run_dir/" "$ROOT_DIR/minecraft/build.gradle"
+		rm -rf "$ROOT_DIR/minecraft/src"
+	else
+		echo "forge is already downloaded"
+	fi
+
+	if ! [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
+		fetch $URL_LUACRAFT luacraft "$ROOT_DIR/minecraft/src" 1
+		sed -i "/runDir = / s/=.*/= run_dir/" "$ROOT_DIR/minecraft/src/build.gradle"
+	else
+		echo "luacraft is already downloaded"
+	fi
+
+	(
+		export JAVA_HOME="$ROOT_DIR/jdk"
+		cd minecraft || exit
 		bash gradlew setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 		bash gradlew build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
-	cd ..
-	
-	mkdir -p $ROOT_DIR/minecraft/run_client
-	mkdir -p $ROOT_DIR/minecraft/run_server
-	
+	)
+	mkdir -p "$ROOT_DIR/minecraft/run_client"
+	mkdir -p "$ROOT_DIR/minecraft/run_server"
+
 	#remove any previous home and cache folders
-	rm -rf $ROOT_DIR/minecraft/.cache_client
-	rm -rf $ROOT_DIR/minecraft/.home_client
-	rm -rf $ROOT_DIR/minecraft/.cache_server
-	rm -rf $ROOT_DIR/minecraft/.home_server
-	
+	rm -rf "$ROOT_DIR/minecraft/.cache_client"
+	rm -rf "$ROOT_DIR/minecraft/.home_client"
+	rm -rf "$ROOT_DIR/minecraft/.cache_server"
+	rm -rf "$ROOT_DIR/minecraft/.home_server"
+
 	#duplicate the home and cache folders to client and server to prevent crashing and file lock errors
-	cp -r -f $ROOT_DIR/minecraft/.cache_shared $ROOT_DIR/minecraft/.cache_client
-	cp -r -f $ROOT_DIR/minecraft/.cache_shared $ROOT_DIR/minecraft/.cache_server
-	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_server
-	cp -r -f $ROOT_DIR/minecraft/.home_shared $ROOT_DIR/minecraft/.home_client
-	
+	cp -rf "$ROOT_DIR/minecraft/.cache_shared" "$ROOT_DIR/minecraft/.cache_client"
+	cp -rf "$ROOT_DIR/minecraft/.cache_shared" "$ROOT_DIR/minecraft/.cache_server"
+	cp -rf "$ROOT_DIR/minecraft/.home_shared" "$ROOT_DIR/minecraft/.home_server"
+	cp -rf "$ROOT_DIR/minecraft/.home_shared" "$ROOT_DIR/minecraft/.home_client"
+
 	world_seed="3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake"
 
 	#some default properties
-	echo -e "pauseOnLostFocus:false\n" > $ROOT_DIR/minecraft/run_client/options.txt
-	echo -e "online-mode=false\nlevel-type=CUSTOMIZED\ngenerator-settings="$world_seed"\n" > $ROOT_DIR/minecraft/run_server/server.properties
+	echo -e "pauseOnLostFocus:false\n" > "$ROOT_DIR/minecraft/run_client/options.txt"
+	echo -e "online-mode=false\nlevel-type=CUSTOMIZED\ngenerator-settings=$world_seed\n" > "$ROOT_DIR/minecraft/run_server/server.properties"
+
+	echo "finished building luacraft"
 }
 
 update_luacraft()
 {
-	download $URL_LUACRAFT "temp"
-	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/minecraft/src
-	rm -r -f $ROOT_DIR/temp/
+	rm -f "$ROOT_DIR/luacraft.zip"
+
+	fetch $URL_LUACRAFT luacraft "$ROOT_DIR/temp"
+	rm -f "$ROOT_DIR/temp.zip"
+
+	cp -rf "$ROOT_DIR/temp/*/*" "$ROOT_DIR/minecraft/src"
+	rm -rf "$ROOT_DIR/temp/"
+
 	build
 }
 
 link_folders()
-{	
-	if ! [ -e "$ROOT_DIR/minecraft/run_$1/addons" ]; then
-		ln -s -d $ROOT_DIR/../shared/addons/ $ROOT_DIR/minecraft/run_$1/addons
-	fi
+{
+	rm -f "$ROOT_DIR/minecraft/run_$1/addons"
+	ln -s -d "$ROOT_DIR/../shared/addons/" "$ROOT_DIR/minecraft/run_$1/addons"
 
-	if ! [ -e "$ROOT_DIR/minecraft/run_$1/lua" ]; then
-		ln -s -d $ROOT_DIR/../shared/lua/ $ROOT_DIR/minecraft/run_$1/lua
-	fi
+	rm -f "$ROOT_DIR/minecraft/run_$1/lua"
+	ln -s -d "$ROOT_DIR/../shared/lua/" "$ROOT_DIR/minecraft/run_$1/lua"
 }
 
 if [ "$1" == "build" ] || [ "$1" == "" ]; then
@@ -106,11 +118,13 @@ fi
 
 if [ "$1" == "ide" ]; then
 	if ! [ -f "$ROOT_DIR/ide/zbstudio.sh" ]; then
-		download $URL_IDE "ide" 1
+		fetch $URL_IDE ide "$ROOT_DIR/ide" 1
 	fi
 
-	cd ide/
-	./zbstudio.sh -cfg ../../shared/ide/config.lua
+	(
+		cd ide/ || exit
+		./zbstudio.sh -cfg ../../shared/ide/config.lua
+	)
 fi
 
 if [ "$1" == "client" ] || [ "$1" == "server" ]; then
@@ -120,31 +134,33 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 
 	link_folders client
 	link_folders server
-	
-	export JAVA_HOME="$ROOT_DIR/jdk"
-	
+
 	if [ "$1" == "client" ]; then
 		run=runClient
 	elif [ "$1" == "server" ]; then
 		run=runServer
-		echo -e "eula=true\n" > $ROOT_DIR/minecraft/run_server/eula.txt
+		echo -e "eula=true\n" > "$ROOT_DIR/minecraft/run_server/eula.txt"
 	fi
-	
-	cd minecraft
-		bash gradlew $run -Prun_dir="run_$1" --project-cache-dir .cache_$1 --gradle-user-home .home_$1 -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
-	cd ..
+
+	(
+		export JAVA_HOME="$ROOT_DIR/jdk"
+		cd minecraft || exit
+		bash gradlew $run -Prun_dir='run_$1' --project-cache-dir .cache_$1 --gradle-user-home .home_$1 -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+	)
 fi
 
 if [ "$1" == "update" ]; then
-	rm -r -f $ROOT_DIR/../shared/ide
-	rm -r -f $ROOT_DIR/../shared/lua/examples
-	rm -r -f $ROOT_DIR/../shared/lua/tutorial
-	rm -r -f $ROOT_DIR/../shared/lua/autorun
-	
-	download $URL_REPO "temp"
-	cp -r -f $ROOT_DIR/temp/*/* $ROOT_DIR/../
-	rm -r -f $ROOT_DIR/temp/
-	
+	rm -rf "$ROOT_DIR/../shared/ide"
+	rm -rf "$ROOT_DIR/../shared/lua/examples"
+	rm -rf "$ROOT_DIR/../shared/lua/tutorial"
+	rm -rf "$ROOT_DIR/../shared/lua/autorun"
+
+	fetch $URL_REPO temp "$ROOT_DIR/temp"
+	rm -f "$ROOT_DIR/temp.zip"
+
+	cp -rf "$ROOT_DIR/temp/*/*" "$ROOT_DIR/../"
+	rm -rf "$ROOT_DIR/temp/"
+
 	if [ -f "$ROOT_DIR/minecraft/src/build.gradle" ]; then
 		update_luacraft
 	fi
@@ -155,8 +171,8 @@ if [ "$1" == "update_luacraft" ]; then
 fi
 
 if [ "$1" == "clean" ]; then
-	rm -r -f $ROOT_DIR/ide
-	rm -r -f $ROOT_DIR/jdk
-	rm -r -f $ROOT_DIR/minecraft
-	rm -f $ROOT_DIR/temp.zip
+	rm -rf "$ROOT_DIR/ide"
+	rm -rf "$ROOT_DIR/jdk"
+	rm -rf "$ROOT_DIR/minecraft"
+	rm -f "$ROOT_DIR/temp.zip"
 fi
