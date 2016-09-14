@@ -10,3 +10,5 @@
 /windows/jdk
 /windows/minecraft
 /windows/ide
+
+/shared/lua/reference.lua
