@@ -1,7 +1,6 @@
 .Sync*
 *.!sync
 .directory
-/data
 
 /linux/jdk
 /linux/minecraft
@@ -10,5 +9,3 @@
 /windows/jdk
 /windows/minecraft
 /windows/ide
-
-/shared/lua/reference.lua
