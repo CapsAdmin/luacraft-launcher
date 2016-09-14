@@ -74,12 +74,12 @@ function PLUGIN:RunString(id, str)
 	end
 end
 
-function PLUGIN:RunScript(where, path)
-	if self:IsRunning(where) then
+function PLUGIN:RunScript(id, path)
+	if self:IsRunning(id) then
 		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
 		ide:Print("loading: ", path)
 		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
-		self:RunString(where, str)
+		self:RunString(id, str)
 		return true
 	end
 end
@@ -166,7 +166,7 @@ function PLUGIN:onRegister()
 		end)
 
 		info.shellbox, self.server_page = self:CreateRemoteConsole(info.name, function(str)
-			self:RunString("server", str)
+			self:RunString(info.id, str)
 		end, info.bitmap(self))
 	end
 
