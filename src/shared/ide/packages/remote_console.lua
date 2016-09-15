@@ -13,6 +13,7 @@ local consoles = {
 		name = "Server Console",
 		working_directory = "../",
 		cmd_line = jit.os == "Windows" and "server.cmd" or "bash server.bash",
+		focus = true,
 		bitmap = function(self) return wx.wxBitmap(icons.server) end,
 		tool_bar =  {
 			name = "Run On Server",
@@ -55,12 +56,14 @@ function PLUGIN:Build(callback)
 		"luacraft_build",
 		function()
 			ide:GetToolBar():ToggleTool(ID_BUILD, false)
+			ide:GetToolBar():Realize()
 			if callback then
 				callback()
 			end
 		end
 	)
 	ide:GetToolBar():ToggleTool(ID_BUILD, true)
+	ide:GetToolBar():Realize()
 end
 
 function PLUGIN:RunString(id, str)
@@ -113,6 +116,7 @@ function PLUGIN:StartProcess(id, cmd_line, working_directory, env_vars, on_print
 		on_print,
 		"luacraft_" .. id,
 		function()
+			on_print("stopped")
 			ide:GetToolBar():EnableTool(self.consoles[id].wx_id, false)
 			if on_end then on_end() end
 			for k,v in pairs(self.consoles) do
@@ -121,11 +125,17 @@ function PLUGIN:StartProcess(id, cmd_line, working_directory, env_vars, on_print
 				end
 			end
 			ide:GetToolBar():ToggleTool(ID_START, false)
+			ide:GetToolBar():Realize()
 		end
 	)
 
 	ide:GetToolBar():EnableTool(self.consoles[id].wx_id, true)
 	ide:GetToolBar():ToggleTool(ID_START, true)
+	ide:GetToolBar():Realize()
+
+	if self.consoles[id].focus then
+		self.consoles[id].shellbox:SetFocus()
+	end
 end
 
 function PLUGIN:StopProcessInternal(pid)
@@ -145,11 +155,6 @@ function PLUGIN:StopProcess(id)
 		self:Print("stopping "..id.."...")
 		local pid = self.consoles[id].pid
 		self:StopProcessInternal(pid)
-	else
-		self:Print(id, "already stopped")
-		for _, info in pairs(self.consoles) do
-			--info.shellbox:Erase()
-		end
 	end
 end
 
