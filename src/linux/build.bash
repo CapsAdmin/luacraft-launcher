@@ -145,7 +145,7 @@ if [ "$1" == "client" ] || [ "$1" == "server" ]; then
 	(
 		export JAVA_HOME="$ROOT_DIR/jdk"
 		cd minecraft || exit
-		bash gradlew $run -Prun_dir='run_$1' --project-cache-dir .cache_$1 --gradle-user-home .home_$1 -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+		bash gradlew $run -Prun_dir="run_$1" --project-cache-dir .cache_$1 --gradle-user-home .home_$1 -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	)
 fi
 
