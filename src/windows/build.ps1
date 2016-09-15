@@ -65,7 +65,7 @@ function build()
 		echo "java is already downloaded"
 	}
 
-	if(!(Test-Path "$ROOT_DIR\minecraft\gradle.build")) {
+	if(!(Test-Path "$ROOT_DIR\minecraft\build.gradle")) {
 		fetch $URL_FORGE forge "$ROOT_DIR\minecraft"
 		(Get-Content "$ROOT_DIR\minecraft\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\build.gradle"
 		Remove-Folder "$ROOT_DIR\minecraft\src"
@@ -73,7 +73,7 @@ function build()
 		echo "forge is already downloaded"
 	}
 
-	if(!(Test-Path "$ROOT_DIR\minecraft\src\gradle.build")) {
+	if(!(Test-Path "$ROOT_DIR\minecraft\src\build.gradle")) {
 		fetch $URL_LUACRAFT luacraft "$ROOT_DIR\minecraft\src" 1
 		(Get-Content "$ROOT_DIR\minecraft\src\build.gradle") -replace 'runDir = "[a-z_]+"', 'runDir = run_dir' | Set-Content "$ROOT_DIR\minecraft\src\build.gradle"
 	} else {
