@@ -235,14 +235,15 @@ function PLUGIN:onUnregister()
 end
 
 function PLUGIN:onEditorSave(editor)
-	local path = ide:GetDocument(editor).filePath
+	local path = ide:GetDocument(editor).filePath:gsub("\\", "/"):lower()
+
 	if path:find("^.+/client/[^/]+$") then
 		self:RunScript("client", path)
 	elseif path:find("^.+/server/[^/]+$") then
 		self:RunScript("server", path)
 	else
-		self:RunScript("client", path.filePath)
-		self:RunScript("server", path.filePath)
+		self:RunScript("client", path)
+		self:RunScript("server", path)
 	end
 end
 
