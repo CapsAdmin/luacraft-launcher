@@ -23,7 +23,7 @@ function PLUGIN:onAppLoad()
 		obj:Normalize()
 
 		ide:SetProject(obj:GetFullPath())
-		ide:GetProjectTree():SetItemText(ide:GetProjectTree():GetRootItem(), "lua")
+		--ide:GetProjectTree():SetItemText(ide:GetProjectTree():GetRootItem(), "lua")
 	end
 
 	if default_file then
