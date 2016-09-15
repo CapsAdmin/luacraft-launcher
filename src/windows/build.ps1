@@ -105,7 +105,7 @@ function build()
 
 	#some default properties
 	Add-Content "$ROOT_DIR\minecraft\run_client\options.txt" "pauseOnLostFocus:false"
-	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings="$world_seed"`n"
+	Add-Content "$ROOT_DIR\minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=" + $world_seed + "`n"
 
 	Write-Output "finished building luacraft"
 }
