@@ -42,7 +42,7 @@ function Remove($path) {
 	if(Is-Directory "$path") {
 		Write-Host -NoNewline "Remove directory: '$pwd\$path' ... "
 		Get-ChildItem -Path "$path\*" -Recurse -Force | Remove-Item -Force -Recurse
-		Remove-Item -Path $path -Recurse -Force
+		Remove-Item -Path "$path" -Recurse -Force
 		if(Is-Directory "$path") {
 			Error "directory remove error", "tried to remove directory '$path' but the directory still exists"
 		} else {
@@ -50,7 +50,7 @@ function Remove($path) {
 		}
 	} elseif(Is-File "$path") {
 		Write-Host -NoNewline "Remove file: '$pwd\$path' ... "
-		Remove-Item -Path -Force "$path"
+		Remove-Item -Path "$path" -Force
 		if(Is-File "$path") {
 			Error "file remove error", "tried to remove file '$path' but the directory still exists"
 		}		
