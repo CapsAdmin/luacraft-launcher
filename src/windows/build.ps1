@@ -5,20 +5,19 @@ $URL_IDE="https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
 $URL_REPO="https://github.com/CapsAdmin/luacraft-launcher/archive/master.zip"
 
 $arg=$args[0]
-$ROOT_DIR = $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
 function Error($title, $detail) {
 	Write-Error $title
 	Write-Error $detail
 	[System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-	[System.Windows.Forms.MessageBox]::Show($detail, $detail)
+	[System.Windows.Forms.MessageBox]::Show($title, $detail)
 	pause
 	exit
 }
 
 function Remove($path) {
 	if(Test-Path "$path" -PathType Container) {
-		Write-Host -NoNewline "removing directory: '$ROOT_DIR\$path' ... "
+		Write-Host -NoNewline "removing directory: '$pwd\$path' ... "
 		Get-ChildItem -Path "$path\\*" -Recurse -Force | Remove-Item -Force -Recurse
 		Remove-Item $path -Recurse -Force
 		if(Test-Path "$path" -PathType Container) {
@@ -27,7 +26,7 @@ function Remove($path) {
 			Write-Host "OK"
 		}
 	} elseif(Test-Path "$path" -PathType Leaf) {
-		Write-Host -NoNewline "removing file: '$ROOT_DIR\$path' ... "
+		Write-Host -NoNewline "removing file: '$pwd\$path' ... "
 		Remove-Item -Force "$path"
 		if(Test-Path "$path" -PathType Leaf) {
 			Error "file remove error", "tried to remove file '$path' but the directory still exists"
@@ -47,7 +46,7 @@ function Download($url, $location) {
 		Move-Item -Confirm:$false -Force -Path "$location.tmp" -Destination "$location"
 		Write-Host "OK"
 	} else {
-		Write-Host "'$ROOT_DIR\$location' already exists. Skipping"
+		Write-Host "'$pwd\$location' already exists. Skipping"
 		Write-Host "OK"
 	}
 }
@@ -88,6 +87,27 @@ function fetch($url, $zip_name, $dir, $move_files) {
 	Extract $zip_name $dir $move_files
 }
 
+function setup_run_directory($what)
+{
+	if (!(Test-Path "minecraft\.cache_$what" -PathType Container)) {
+		New-Item -ItemType Directory -Force -Path "minecraft\run_$what"
+	}
+
+	cmd /c rmdir "minecraft\run_$what\addons"
+	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons"
+
+	cmd /c rmdir "minecraft\run_$what\lua"
+	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua"	
+	
+	if (!(Test-Path "minecraft\.home_$what" -PathType Container) -And (Test-Path "minecraft\.home_shared" -PathType Container)) {
+		Copy-Item -Force -Recurse "minecraft\.home_shared" "minecraft\.home_$what"	
+	}
+	
+	if (!(Test-Path "minecraft\.cache_$what" -PathType Container) -And (Test-Path "minecraft\.cache_shared" -PathType Container)) {
+		Copy-Item -Force -Recurse "minecraft\.cache_shared" "minecraft\.cache_$what"	
+	}
+}
+
 function build()
 {	
 	#setup java
@@ -126,7 +146,7 @@ function build()
 	
 	Write-Output "building luacraft..."
 
-	$env:JAVA_HOME = "$ROOT_DIR\jdk"
+	$env:JAVA_HOME = "$pwd\jdk"
 	Set-Location minecraft
 		.\gradlew.bat setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --refresh-dependencies --project-cache-dir .cache_shared --gradle-user-home .home_shared
 		.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
@@ -138,25 +158,20 @@ function build()
 		Write-Output "build successful"
 	}
 	
-	New-Item -ItemType Directory -Force -Path "minecraft\run_client"
-	New-Item -ItemType Directory -Force -Path "minecraft\run_server"
-
-	#remove any previous home and cache folders
 	Remove "minecraft\.cache_client"
-	Remove "minecraft\.home_client"
 	Remove "minecraft\.cache_server"
 	Remove "minecraft\.home_server"
-
-	#duplicate the home and cache folders to client and server to prevent crashing and file lock errors
-	Copy-Item -Force -Recurse "minecraft\.cache_shared" "minecraft\.cache_client"
-	Copy-Item -Force -Recurse "minecraft\.cache_shared" "minecraft\.cache_server"
-	Copy-Item -Force -Recurse "minecraft\.home_shared" "minecraft\.home_server"
-	Copy-Item -Force -Recurse "minecraft\.home_shared" "minecraft\.home_client"
-
-	#some default properties
+	Remove "minecraft\.home_client"
+	
+	setup_run_directory "client"
+	setup_run_directory "server"
+	
+	#setup client directories
 	Add-Content "minecraft\run_client\options.txt" "pauseOnLostFocus:false"
+			
+	#setup server directories
 	Add-Content "minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
-
+	
 	Write-Output "finished building luacraft"
 }
 
@@ -173,27 +188,16 @@ function update_luacraft()
 	build
 }
 
-function link_folders($what)
-{
-	cmd /c rmdir "minecraft\run_$what\addons"
-	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons"
-
-	cmd /c rmdir "minecraft\run_$what\lua"
-	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua"
-}
-
 if($arg -eq "build") {
 	build
 }
 
 if($arg -eq "ide") {
-	if(!(Test-Path "ide\zbstudio.exe"))
-	{
+	if(!(Test-Path "ide\zbstudio.exe"))	{
 		fetch $URL_IDE "ide.zip" "ide" $true
 	}
 	
-	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar"))
-	{
+	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar")) {
 		build
 	}
 
@@ -203,12 +207,12 @@ if($arg -eq "ide") {
 }
 
 if($arg -eq "client" -Or $arg -eq "server") {
-	if(!(Test-Path "minecraft")) {
+	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar")) {
 		build
 	}
 
-	link_folders "client"
-	link_folders "server"
+	setup_run_directory "client"
+	setup_run_directory "server"
 
 	if($arg -eq "client") {
 		$run="runClient"
@@ -217,7 +221,7 @@ if($arg -eq "client" -Or $arg -eq "server") {
 		Add-Content "minecraft\run_server\eula.txt" "eula=true"
 	}
 
-	$env:JAVA_HOME = "$ROOT_DIR\jdk"
+	$env:JAVA_HOME = "$pwd\jdk"
 	Set-Location minecraft
 		.\gradlew $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	Set-Location ..
