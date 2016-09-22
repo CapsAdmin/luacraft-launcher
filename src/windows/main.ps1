@@ -16,37 +16,41 @@ function Error($title, $detail) {
 }
 
 function Is-Directory($path) {
-	Test-Path "$path" -PathType Container
+	Test-Path -Path "$path" -PathType Container
 }
 
 function Is-File($path) {
-	Test-Path "$path" -PathType Leaf
+	Test-Path -Path "$path" -PathType Leaf
 }
 
-function Copy($from, $to) {
-	Copy-Item -Force -Recurse -Confirm:$false $from $to
+function Copy-Item2($from, $to) {
+	Write-Host -NoNewline "Copy $from to $to ... "
+	Copy-Item -Path "$from" -Destination "$to" -Force -Recurse -Confirm:$false 
+	Write-Output "OK"
 }
 
 function Create-Directory($location) {
-	New-Item -ItemType Directory -Force -Path "$location" | Out-Null
+	Write-Host -NoNewline "Create directory $location ... "
+	New-Item -Path "$location" -ItemType Directory -Force | Out-Null
 	if (!(Is-Directory "$location")) {
 		Error "create directory error" "tried to create directory '$location' but it doesn't exist"
 	}
+	Write-Output "OK"
 }
 
 function Remove($path) {
 	if(Is-Directory "$path") {
-		Write-Host -NoNewline "removing directory: '$pwd\$path' ... "
+		Write-Host -NoNewline "Remove directory: '$pwd\$path' ... "
 		Get-ChildItem -Path "$path\*" -Recurse -Force | Remove-Item -Force -Recurse
-		Remove-Item $path -Recurse -Force
+		Remove-Item -Path $path -Recurse -Force
 		if(Is-Directory "$path") {
 			Error "directory remove error", "tried to remove directory '$path' but the directory still exists"
 		} else {
 			Write-Host "OK"
 		}
 	} elseif(Is-File "$path") {
-		Write-Host -NoNewline "removing file: '$pwd\$path' ... "
-		Remove-Item -Force "$path"
+		Write-Host -NoNewline "Remove file: '$pwd\$path' ... "
+		Remove-Item -Path -Force "$path"
 		if(Is-File "$path") {
 			Error "file remove error", "tried to remove file '$path' but the directory still exists"
 		}		
@@ -55,7 +59,7 @@ function Remove($path) {
 }
 
 function Move($from, $to) {
-	Move-Item -Confirm:$false -Force -Path "$from" -Destination "$to"
+	Move-Item -Path "$from" -Destination "$to" -Confirm:$false -Force
 }
 
 function Download($url, $location) {
@@ -85,7 +89,7 @@ function Extract($file, $location, $move_files) {
 		Error "zip extract error" "could not extract $pwd\$file!"
 	}
 	
-	if (!(Test-Path $location -PathType Container)) {
+	if (!(Is-File $location)) {
 		Create-Directory $location
 	}
 
@@ -109,22 +113,22 @@ function fetch($url, $zip_name, $dir, $move_files) {
 
 function setup_run_directory($what)
 {
-	if (!(Is-File "minecraft\.cache_$what")) {
+	if (!(Is-Directory "minecraft\run_$what")) {
 		Create-Directory "minecraft\run_$what"
 	}
-
-	Remove "minecraft\run_$what\addons"
+	
+	cmd /c rmdir "minecraft\run_$what\addons" | Out-Null
 	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons" | Out-Null
 
-	Remove "minecraft\run_$what\lua"
+	cmd /c rmdir "minecraft\run_$what\lua" | Out-Null
 	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua" | Out-Null
 	
 	if (!(Is-Directory "minecraft\.home_$what") -And (Is-Directory "minecraft\.home_shared")) {
-		Copy "minecraft\.home_shared" "minecraft\.home_$what"	
+		Copy-Item2 "minecraft\.home_shared" "minecraft\.home_$what"
 	}
 	
 	if (!(Is-Directory "minecraft\.cache_$what") -And (Is-Directory "minecraft\.cache_shared")) {
-		Copy "minecraft\.cache_shared" "minecraft\.cache_$what"	
+		Copy-Item2 "minecraft\.cache_shared" "minecraft\.cache_$what"
 	}
 }
 
@@ -179,7 +183,7 @@ function build($skip_setup_decomp)
 	} else {
 		Write-Output "build successful"
 	}
-	
+
 	Remove "minecraft\.cache_client"
 	Remove "minecraft\.cache_server"
 	Remove "minecraft\.home_server"
@@ -242,7 +246,7 @@ if($arg -eq "update-scripts") {
 	Remove "..\shared\lua\autorun"
 
 	fetch $URL_REPO "temp.zip" "temp"
-	Copy "temp\*\*" "..\"
+	Copy-Item2 "temp\*\*" "..\"
 	
 	Remove "temp.zip"
 	Remove "temp"
