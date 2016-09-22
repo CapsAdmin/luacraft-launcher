@@ -1,11 +1,11 @@
 local PLUGIN = {
-	name = "editor defaults for luacraft",
+	name = "editor defaults",
 	description = "sets default interpreter and hides some things that are not needed",
 	author = "CapsAdmin",
 }
 local default_project_dir = "../../shared/lua"
 local default_file = "/tutorial/intro.lua"
-local default_interpreter = "/tutorial/intro.lua"
+local default_interpreter = "luacraft"
 
 if os.getenv("USER") == "caps" then
 	default_project_dir = "../../shared/"
@@ -33,7 +33,7 @@ function PLUGIN:onAppLoad()
 	end
 
 	if default_interpreter then
-		ide:SetInterpreter("luacraft")
+		ide:SetInterpreter(default_interpreter)
 	end
 end
 
