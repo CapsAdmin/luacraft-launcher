@@ -192,12 +192,6 @@ function build($skip_setup_decomp)
 	setup_run_directory "client"
 	setup_run_directory "server"
 	
-	#setup client directories
-	Add-Content "minecraft\run_client\options.txt" "pauseOnLostFocus:false"
-			
-	#setup server directories
-	Add-Content "minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
-	
 	Write-Output "finished building luacraft"
 }
 
@@ -231,14 +225,20 @@ if($arg -eq "client" -Or $arg -eq "server") {
 	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		Error "project is not built" "please run run_luacraft.cmd or src\windows\build.cmd"
 	}
-
+	
 	setup_run_directory "$arg"
 
 	if($arg -Eq "client") {
 		$run = "runClient"
+		if(!(Is-File "minecraft\run_client\options.txt")) {
+			Add-Content "minecraft\run_client\options.txt" "pauseOnLostFocus:false"
+		}
 	} elseif ($arg -Eq "server") {
 		$run = "runServer"
 		Add-Content "minecraft\run_server\eula.txt" "eula=true"
+		if(!(Is-File "minecraft\run_server\server.properties")) {
+			Add-Content "minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
+		}
 	}
 
 	$env:JAVA_HOME = "$pwd\jdk"
