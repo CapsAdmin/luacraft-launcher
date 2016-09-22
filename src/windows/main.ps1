@@ -254,7 +254,7 @@ if($arg -eq "update-scripts") {
 	Remove "..\shared\lua\autorun"
 
 	fetch $URL_REPO "temp.zip" "temp"
-	Copy-Item2 "temp\*\*" "..\"
+	Copy-Item2 "temp\*\*" "..\..\"
 	
 	Remove "temp.zip"
 	Remove "temp"
