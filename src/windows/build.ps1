@@ -10,29 +10,52 @@ function Error($title, $detail) {
 	Write-Error $title
 	Write-Error $detail
 	[System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-	[System.Windows.Forms.MessageBox]::Show($title, $detail)
+	[System.Windows.Forms.MessageBox]::Show($detail, $title)
 	pause
 	exit
 }
 
+function Is-Directory($path) {
+	Test-Path "$path" -PathType Container
+}
+
+function Is-File($path) {
+	Test-Path "$path" -PathType Leaf
+}
+
+function Copy($from, $to) {
+	Copy-Item -Force -Recurse -Confirm:$false $from $to
+}
+
+function Create-Directory($location) {
+	New-Item -ItemType Directory -Force -Path "$location" | Out-Null
+	if (!(Is-Directory "$location")) {
+		Error "create directory error" "tried to create directory '$location' but it doesn't exist"
+	}
+}
+
 function Remove($path) {
-	if(Test-Path "$path" -PathType Container) {
+	if(Is-Directory "$path") {
 		Write-Host -NoNewline "removing directory: '$pwd\$path' ... "
 		Get-ChildItem -Path "$path\\*" -Recurse -Force | Remove-Item -Force -Recurse
 		Remove-Item $path -Recurse -Force
-		if(Test-Path "$path" -PathType Container) {
+		if(Is-Directory "$path") {
 			Error "directory remove error", "tried to remove directory '$path' but the directory still exists"
 		} else {
 			Write-Host "OK"
 		}
-	} elseif(Test-Path "$path" -PathType Leaf) {
+	} elseif(Is-File "$path") {
 		Write-Host -NoNewline "removing file: '$pwd\$path' ... "
 		Remove-Item -Force "$path"
-		if(Test-Path "$path" -PathType Leaf) {
+		if(Is-File "$path") {
 			Error "file remove error", "tried to remove file '$path' but the directory still exists"
 		}		
 		Write-Host "OK"
 	}
+}
+
+function Move($from, $to) {
+	Move-Item -Confirm:$false -Force -Path "$from" -Destination "$to"
 }
 
 function Download($url, $location) {
@@ -43,7 +66,7 @@ function Download($url, $location) {
 		if(!(Test-Path "$location.tmp")) {
 			Error "download error", "'$location.tmp' does not exist after attempting to download '$url'`ndetails may be in console"
 		}
-		Move-Item -Confirm:$false -Force -Path "$location.tmp" -Destination "$location"
+		Move "$location.tmp" "$location"
 		Write-Host "OK"
 	} else {
 		Write-Host "'$pwd\$location' already exists. Skipping"
@@ -63,10 +86,7 @@ function Extract($file, $location, $move_files) {
 	}
 	
 	if (!(Test-Path $location -PathType Container)) {
-		New-Item -ItemType directory -Path $location | Out-Null
-		if (!(Test-Path $location -PathType Container)) {
-			Error "create directory error" "tried to create directory '$location' but it doesn't exist"
-		}
+		Create-Directory $location
 	}
 
 	foreach($item in $zip.items()) {
@@ -75,7 +95,7 @@ function Extract($file, $location, $move_files) {
 	
 	if ($move_files)
 	{
-		Move-Item -Confirm:$false -Force -Path "$location\*\*" -Destination "$location"
+		Move "$location\*\*" "$location"
 	}
 
 	Write-Host "OK"
@@ -89,29 +109,29 @@ function fetch($url, $zip_name, $dir, $move_files) {
 
 function setup_run_directory($what)
 {
-	if (!(Test-Path "minecraft\.cache_$what" -PathType Container)) {
-		New-Item -ItemType Directory -Force -Path "minecraft\run_$what"
+	if (!(Is-File "minecraft\.cache_$what")) {
+		Create-Directory "minecraft\run_$what"
 	}
 
-	cmd /c rmdir "minecraft\run_$what\addons"
-	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons"
+	Remove "minecraft\run_$what\addons"
+	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons" | Out-Null
 
-	cmd /c rmdir "minecraft\run_$what\lua"
-	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua"	
+	Remove "minecraft\run_$what\lua"
+	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua" | Out-Null
 	
-	if (!(Test-Path "minecraft\.home_$what" -PathType Container) -And (Test-Path "minecraft\.home_shared" -PathType Container)) {
-		Copy-Item -Force -Recurse "minecraft\.home_shared" "minecraft\.home_$what"	
+	if (!(Is-Directory "minecraft\.home_$what") -And (Is-Directory "minecraft\.home_shared")) {
+		Copy "minecraft\.home_shared" "minecraft\.home_$what"	
 	}
 	
-	if (!(Test-Path "minecraft\.cache_$what" -PathType Container) -And (Test-Path "minecraft\.cache_shared" -PathType Container)) {
-		Copy-Item -Force -Recurse "minecraft\.cache_shared" "minecraft\.cache_$what"	
+	if (!(Is-Directory "minecraft\.cache_$what") -And (Is-Directory "minecraft\.cache_shared")) {
+		Copy "minecraft\.cache_shared" "minecraft\.cache_$what"	
 	}
 }
 
 function build()
 {	
 	#setup java
-	if(!(Test-Path "jdk\bin\java.exe")) {
+	if(!(Is-File "jdk\bin\java.exe")) {
 		fetch $URL_JAVA "jdk.zip" "jdk" $true
 		
 		#this file takes up space and is not needed
@@ -119,10 +139,10 @@ function build()
 	}
 	
 	#setup minecraft forge
-	if(!(Test-Path "minecraft\build.gradle")) {
+	if(!(Is-File "minecraft\build.gradle")) {
 		fetch $URL_FORGE "forge.zip" "minecraft"
 		
-		if(!(Test-Path "minecraft\build.gradle")) {
+		if(!(Is-File "minecraft\build.gradle")) {
 			Error "download/extract error" "unable to find minecraft\build.gradle."
 		}
 		
@@ -133,10 +153,10 @@ function build()
 		Remove "minecraft\src"
 	}
 
-	if(!(Test-Path "minecraft\src\build.gradle")) {
+	if(!(Is-File "minecraft\src\build.gradle")) {
 		fetch $URL_LUACRAFT "luacraft.zip" "minecraft\src" $true
 		
-		if(!(Test-Path "minecraft\src\build.gradle")) {
+		if(!(Is-File "minecraft\src\build.gradle")) {
 			Error "download/extract error" "unable to find minecraft\src\build.gradle."
 		}
 		
@@ -152,7 +172,7 @@ function build()
 		.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 	Set-Location ..
 	
-	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar")) {
+	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		Error "build error!" "unable to find build output minecraft\build\libs\modid-1.0.jar"
 	} else {
 		Write-Output "build successful"
@@ -180,9 +200,9 @@ function update_luacraft()
 	Remove "luacraft.zip"
 
 	fetch $URL_LUACRAFT "temp.zip" "temp"
-	Remove-Item "temp.zip"
+	Remove "temp.zip"
 
-	Copy-Item -Force -Recurse -Confirm:$false "temp\*\*" "minecraft\src"
+	Copy "temp\*\*" "minecraft\src"
 	Remove "temp"
 
 	build
@@ -193,11 +213,11 @@ if($arg -eq "build") {
 }
 
 if($arg -eq "ide") {
-	if(!(Test-Path "ide\zbstudio.exe"))	{
+	if(!(Is-File "ide\zbstudio.exe"))	{
 		fetch $URL_IDE "ide.zip" "ide" $true
 	}
 	
-	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar")) {
+	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		build
 	}
 
@@ -207,12 +227,14 @@ if($arg -eq "ide") {
 }
 
 if($arg -eq "client" -Or $arg -eq "server") {
-	if (!(Test-Path "minecraft\build\libs\modid-1.0.jar")) {
+	if (!(Is-File "minecraft\build\libs\modid-1.0.jar" -PathType Leaf)) {
 		build
 	}
 
 	setup_run_directory "client"
+	exit
 	setup_run_directory "server"
+	
 
 	if($arg -eq "client") {
 		$run="runClient"
@@ -234,12 +256,12 @@ if($arg -eq "update") {
 	Remove "..\shared\lua\autorun"
 
 	fetch $URL_REPO temp "temp"
-	Remove-Item -Recurse -Force "temp.zip"
+	Remove "temp.zip"
 
-	Copy-Item -Force -Recurse -Confirm:$false "temp\*\*" "..\"
+	Copy "temp\*\*" "..\"
 	Remove "temp"
 
-	if(Test-Path "minecraft\src\build.gradle") {
+	if(Is-File "minecraft\src\build.gradle") {
 		update_luacraft
 	}
 }
@@ -252,5 +274,5 @@ if($arg -eq "clean") {
 	Remove "ide"
 	Remove "jdk"
 	Remove "minecraft"
-	Remove-Item -Recurse -Force "temp.zip"
+	Remove "temp.zip"
 }
