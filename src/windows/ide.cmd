@@ -1,2 +1,2 @@
-set arg=ide
-PowerShell.exe -ExecutionPolicy Bypass -Command "& '%~dp0build.ps1'"
+@ECHO OFF
+PowerShell.exe -ExecutionPolicy Bypass -Command ".\build.ps1 ide"

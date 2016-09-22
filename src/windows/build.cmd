@@ -1,2 +1,3 @@
-set arg=build
-PowerShell.exe -ExecutionPolicy Bypass -Command "& '%~dp0build.ps1'"
+@echo off
+PowerShell.exe -ExecutionPolicy Bypass -Command ".\build.ps1 build"
+pause

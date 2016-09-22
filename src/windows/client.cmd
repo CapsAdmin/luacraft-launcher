@@ -1,2 +1,2 @@
-set arg=client
-PowerShell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -Command "& '%~dp0build.ps1'"
+@ECHO OFF
+PowerShell.exe -ExecutionPolicy Bypass -Command ".\build.ps1 client"
