@@ -157,6 +157,8 @@ function PLUGIN:StartProcess(id)
 			tb:ToggleTool(console.wx_start_id, false)
 			tb:EnableTool(console.wx_run_id, false)
 			tb:Realize()
+			ide:GetUIManager():Update()
+			
 			self:StopProcess(console.id)
 		end
 	)
@@ -164,6 +166,7 @@ function PLUGIN:StartProcess(id)
 	tb:ToggleTool(console.wx_start_id, true)
 	tb:EnableTool(console.wx_run_id, true)
 	tb:Realize()
+	ide:GetUIManager():Update()
 
 	console.shellbox:SetFocus()
 end
@@ -248,6 +251,7 @@ function PLUGIN:onRegister()
 	end
 
 	tb:Realize()
+	ide:GetUIManager():Update()
 end
 
 function PLUGIN:onUnregister()
