@@ -4,251 +4,255 @@ local PLUGIN = {
 	author = "CapsAdmin",
 	version = 0.1,
 }
+ide.config.keymap[ID.STARTDEBUG] = nil
+ide.config.keymap[ID.RUN] = nil
 
-local icons = {} -- see bottom of file
+function PLUGIN:Setup()
+	local function setup_console(id, name, cmd_line, icon, on_key)
+		return
+		{
+			id = id,
+			name = name,
+			cmd_line = cmd_line,
+			icon = icon,
 
-local consoles = {
-	{
-		id = "server",
-		name = "Server Console",
-		working_directory = "../",
-		cmd_line = jit.os == "Windows" and "server.cmd" or "bash server.bash",
-		focus = true,
-		bitmap = function(self) return wx.wxBitmap(icons.server) end,
-		tool_bar =  {
-			name = "Run On Server",
-			bitmap = function(self) return wx.wxBitmap(icons.server) end,
-			click = function(self) self:RunScript("server", ide:GetDocument(ide:GetEditor()).filePath) end,
-		},
-		env_vars = {
-			JAVA_HOME = "../jdk",
-		},
-	},
-	{
-		id = "client",
-		name = "Client Console",
-		working_directory = "../",
-		cmd_line = jit.os == "Windows" and "client.cmd" or "bash client.bash",
-		bitmap = function(self) return wx.wxBitmap(icons.client) end,
-		tool_bar =  {
-			name = "Run On Client",
-			bitmap = function(self) return wx.wxBitmap(icons.client) end,
-			click = function(self) self:RunScript("client", ide:GetDocument(ide:GetEditor()).filePath) end,
-		},
-		env_vars = {
-			JAVA_HOME = "../jdk",
-		},
+			working_directory = "../",
+			env_vars = {
+				JAVA_HOME = "../jdk",
+			},
+
+			start = function(console)
+
+			end,
+			stop = function(console)
+
+			end,
+			run_string = function(console, str)
+				local file = assert(io.open(console.working_directory .. "minecraft/run_" .. id .. "/ide_input_" .. console.id, "ab"))
+				file:write(str)
+				file:write("\n12WD7\n")
+				file:close()
+			end,
+			run_script = function(console, path)
+				console:Print("loading: ", path)
+				console:run_string("local path = [["..path.."]] assert(loadfile(path))() print('script ran successfully')")
+			end,
+			print = function(console, ...)
+				console:Print(...)
+			end,
+			on_update = function(console)
+				if console.socket then
+					console.socket:Update()
+				end
+			end,
+			on_save = function(console, path)
+				if path:lower():find("^.+/"..id.."/[^/]+$") then
+					console:run_script(path)
+				elseif not path:lower():find("^.+/server/[^/]+$") and not path:lower():find("^.+/client/[^/]+$") then
+					console:run_script(path)
+				end
+			end,
+			on_key = on_key,
+		}
+	end
+
+	local server_icon = wx.wxBitmap{
+		"16 16 22 1",
+		" 	c #383838",".	c #353535","+	c #333333",
+		"@	c #303030","#	c #2F2F2F","$	c #2D2D2D",
+		"%	c #242424","&	c #3B3B3B","*	c #272727",
+		"=	c #363636","-	c #323232",";	c #808080",
+		">	c #292929",",	c #2B2B2B","'	c #232323",
+		")	c #3A3A3A","!	c #FFFFFF","~	c #4B4B4B",
+		"{	c #C0C0C0","]	c #3F3F3F","^	c #4A4A4A",
+		"/	c #4D4D4D",
+		" ..+@#$$%& .$*=-",	" ;;;;;;;;;;;;;;-",
+		">;************;@",	"$;************;>",
+		" ;************;%",	",;************;%",
+		"-;************;'",	"#;************;)",
+		"#;*!**********;&",	"~{**!*********{]",
+		"~{*!**!!!*****{@",	"~{************{-",
+		"~{{{{{{{{{{{{{{$",	"^{{{{{{{{{{{**{-",
+		"/{{{{{{{{{{{{{{$",	"]--@@@@@@$@@@@--"
+	}	;
+
+
+	local client_icon = wx.wxBitmap{
+		"16 16 43 1",
+		" 	c #2F200D",".	c #2B1E0D","+	c #2F1F0F",
+		"@	c #281C0B","#	c #241808","$	c #261A0A",
+		"%	c #2A1D0D","&	c #332411","*	c #422A12",
+		"=	c #3F2A15","-	c #2C1E0E",";	c #B6896C",
+		">	c #BD8E72",",	c #C69680","'	c #BD8B72",
+		")	c #BD8E74","!	c #AC765A","~	c #342512",
+		"{	c #AA7D66","]	c #B4846D","^	c #AD806D",
+		"/	c #9C725C","(	c #BB8972","_	c #9C694C",
+		":	c #FFFFFF","<	c #523D89","[	c #B57B67",
+		"}	c #9C6346","|	c #B37B62","1	c #B78272",
+		"2	c #6A4030","3	c #BE886C","4	c #A26A47",
+		"5	c #805334","6	c #905E43","7	c #965F40",
+		"8	c #774235","9	c #8F5E3E","0	c #815339",
+		"a	c #6F452C","b	c #6D432A","c	c #7A4E33",
+		"d	c #83553B",
+		"  ..++@@##$$..%%",	"  ..++@@##$$..%%",
+		"......&&**==--@@",	"......&&**==--@@",
+		"..;;>>,,''))!!~~",	"..;;>>,,''))!!~~",
+		"{{]]{{^^//((____",	"{{]]{{^^//((____",
+		"]]::<<[[((<<::{{",	"]]::<<[[((<<::{{",
+		"}}||112222334455",	"}}||112222334455",
+		"6677888888889900",	"6677888888889900",
+		"aabb0000ccddddcc",	"aabb0000ccddddcc"
 	}
-}
+;
 
-local ID_START = NewID()
-local ID_BUILD = NewID()
-
-function PLUGIN:Build(callback)
-	wx.wxSetEnv("JAVA_HOME", "jdk")
-
-	self.build_pid = CommandLineRun(
-		jit.os == "Windows" and "build.cmd" or "bash build.bash",
-		"../",
-		true,--tooutput,
-		true,--nohide,
-		nil,
-		"luacraft_build",
-		function()
-			ide:GetToolBar():ToggleTool(ID_BUILD, false)
-			ide:GetToolBar():Realize()
-			if callback then
-				callback()
+	return {
+		setup_console("server", "Server", jit.os ~= "Windows" and "bash server.bash" or "server.cmd", server_icon),
+		setup_console("client", "Client", jit.os ~= "Windows" and "bash client.bash" or "client.cmd", client_icon, function(console, key, mod)
+			if (key == wx.WXK_F5 or key == wx.WXK_F6) then
+				if mod == wx.wxMOD_SHIFT then
+					console:Stop()
+				else
+					console:Start()
+				end
+				return false
 			end
-		end
-	)
-	ide:GetToolBar():ToggleTool(ID_BUILD, true)
-	ide:GetToolBar():Realize()
-end
-
-function PLUGIN:RunString(id, str)
-	if self:IsRunning(id) then
-		local file = assert(io.open(self.consoles[id].working_directory .. "minecraft/run_"..id.."/ide_input_" .. id, "ab"))
-		file:write(str)
-		file:write("\n12WD7\n")
-		file:close()
-	else
-		self:Print("Program is not launched")
-	end
-end
-
-function PLUGIN:RunScript(id, path)
-	if self:IsRunning(id) then
-		path = path:gsub("\\", "/"):match("shared/lua/(.+)") or path
-		ide:Print("loading: ", path)
-		local str = "local path = [["..path.."]] print('loading: ' .. path) assert(loadfile(path))()"
-		self:RunString(id, str)
-		return true
-	end
-end
-
-function PLUGIN:Print(id, ...)
-	if self.consoles[id] then
-		self.consoles[id].shellbox:Print(...)
-	end
+		end),
+	}
 end
 
 function PLUGIN:IsRunning(id)
-	return self.consoles[id].pid and wx.wxProcess.Exists(self.consoles[id].pid)
+	local console = self.consoles[id]
+	return console.pid and wx.wxProcess.Exists(console.pid)
 end
 
-function PLUGIN:StartProcess(id, cmd_line, working_directory, env_vars, on_print, on_end)
-	if self:IsRunning(id) then
-		on_print("already started")
+function PLUGIN:StartProcess(id)
+	local console = self.consoles[id]
+
+	if self:IsRunning(console.id) then
+		console:print("already started")
 	end
 
-	on_print("launching...")
+	if console.start then
+		console:start()
+	end
 
-	for k,v in pairs(env_vars) do
+	console:print("launching...")
+
+	for k,v in pairs(console.env_vars) do
+		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
 		wx.wxSetEnv(k, v)
 	end
 
-	self.consoles[id].pid = CommandLineRun(
-		cmd_line,
-		working_directory,
+	local tb = ide:GetToolBar()
+
+	console.pid = CommandLineRun(
+		console.cmd_line,
+		console.working_directory,
 		true,--tooutput,
 		true,--nohide,
-		on_print,
+		function(...) console:print(...) end,
 		"luacraft_" .. id,
 		function()
-			on_print("stopped")
-			ide:GetToolBar():EnableTool(self.consoles[id].wx_id, false)
-			if on_end then on_end() end
-			for k,v in pairs(self.consoles) do
-				if self:IsRunning(v.id) then
-					return
-				end
-			end
-			ide:GetToolBar():ToggleTool(ID_START, false)
-			ide:GetToolBar():Realize()
+			console:print("stopped")
+			tb:ToggleTool(console.wx_start_id, false)
+			tb:EnableTool(console.wx_run_id, false)
+			tb:Realize()
+			self:StopProcess(console.id)
 		end
 	)
 
-	ide:GetToolBar():EnableTool(self.consoles[id].wx_id, true)
-	ide:GetToolBar():ToggleTool(ID_START, true)
-	ide:GetToolBar():Realize()
+	tb:ToggleTool(console.wx_start_id, true)
+	tb:EnableTool(console.wx_run_id, true)
+	tb:Realize()
 
-	if self.consoles[id].focus then
-		self.consoles[id].shellbox:SetFocus()
-	end
+	console.shellbox:SetFocus()
 end
 
-function PLUGIN:StopProcessInternal(pid)
-	local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
-	if ret == wx.wxKILL_OK then
-		ide:Print(("stopped process (pid: %d)."):format(pid))
-	elseif ret ~= wx.wxKILL_NO_PROCESS then
-		wx.wxMilliSleep(250)
-		if wx.wxProcess.Exists(pid) then
-			ide:Print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
+function PLUGIN:StopProcess(id)
+	local console = self.consoles[id]
+
+	if self:IsRunning(console.id) then
+		console:print("stopping " .. console.name .. "...")
+
+		local pid = self.consoles[id].pid
+		local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
+		if ret == wx.wxKILL_OK then
+			ide:Print(("stopped process (pid: %d)."):format(pid))
+		elseif ret ~= wx.wxKILL_NO_PROCESS then
+			wx.wxMilliSleep(250)
+			if wx.wxProcess.Exists(pid) then
+				ide:Print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
+			end
+		end
+
+		if console.stop then
+			console:stop()
 		end
 	end
 end
 
-function PLUGIN:StopProcess(id)
-	if self:IsRunning(id) then
-		self:Print("stopping "..id.."...")
-		local pid = self.consoles[id].pid
-		self:StopProcessInternal(pid)
-	end
-end
-
-function PLUGIN:StartProcesses()
-	for k, v in pairs(self.consoles) do
-		self:StartProcess(v.id, v.cmd_line, v.working_directory, v.env_vars, function(s) self:Print(v.id, s) end, function() self:StopProcess(v.id) end)
-	end
-end
-
-function PLUGIN:StopProcesses()
-	for k, v in pairs(self.consoles) do
-		self:StopProcess(v.id)
-	end
-	if self.build_pid then
-		self:StopProcessInternal(self.build_pid)
-	end
-end
+local MAKE_ID = NewID()
 
 function PLUGIN:onRegister()
 	self.consoles = {}
 
 	local tb = ide:GetToolBar()
 
-	tb:AddTool(ID_BUILD, wx.wxBitmap(icons.build), wx.wxBitmap(icons.build), true)
-	ide:GetMainFrame():Connect(ID_BUILD, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		if event:IsChecked() then
-			self:Build()
-		else
-			if self.build_pid then
-				self:StopProcessInternal(self.build_pid)
-			end
-		end
-	end)
-	tb:AddLabel(ID_BUILD, "Build")
+	for _, info in ipairs(self:Setup()) do
+		local console = {}
 
-	tb:AddTool(ID_START, wx.wxBitmap(icons.start), wx.wxBitmap(icons.start), true)
-	ide:GetMainFrame():Connect(ID_START, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-		if event:IsChecked() then
-			if not self.skip_build then
-				local file = io.open(ide:GetRootPath() .. "../minecraft/src/build.gradle", "rb")
-				if not file then
-					self:Build(function() self.skip_build = true self:StartProcesses() self.skip_build = nil end)
-					return
-				end
-			end
+		for k,v in pairs(info) do console[k] = v end
 
-			self:StartProcesses()
-		else
-			self:StopProcesses()
-		end
-	end)
-	tb:AddLabel(ID_START, "Start")
+		console.wx_start_id = NewID()
+		console.Start = function() self:StartProcess(console.id) end
+		console.Stop = function() self:StopProcess(console.id) end
+		console.IsRunning = function() return self:IsRunning(console.id) end
+		console.Print = function(_, ...) console.shellbox:Print(...) end
+
+		tb:AddTool(console.wx_start_id, console.icon, console.icon, true)
+		ide:GetMainFrame():Connect(console.wx_start_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+			if event:IsChecked() then
+				self:StartProcess(console.id)
+			else
+				self:StopProcess(console.id)
+			end
+		end)
+		tb:AddLabel(console.wx_start_id, "Start " .. console.name)
+
+		console.shellbox = self:CreateRemoteConsole(console.name .. " Console", function(str)
+			if self:IsRunning(console.id) then
+				console:run_string(str)
+			else
+				console:print("Program is not launched")
+			end
+		end, console.icon)
+
+		self.consoles[console.id] = console
+	end
 
 	tb:AddSeparator()
 
-	for _, info in ipairs(consoles) do
-		self.consoles[info.id] = info
+	for _, console in pairs(self.consoles) do
+		console.wx_run_id = NewID()
 
-		info.wx_id = NewID()
-
-		info.tool_bar.tool = tb:AddTool(info.wx_id, "", info.tool_bar.bitmap(self))
-		ide:GetMainFrame():Connect(info.wx_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
-			info.tool_bar.click(self)
+		tb:AddTool(console.wx_run_id, "", console.icon)
+		ide:GetMainFrame():Connect(console.wx_run_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+			if self:IsRunning(console.id) then
+				local path = ide:GetDocument(ide:GetEditor()).filePath:gsub("\\", "/")
+				path = path:match("shared/lua/(.+)") or path
+				console:run_script(path)
+			end
 		end)
-		tb:AddLabel(info.wx_id, info.tool_bar.name)
-		tb:EnableTool(info.wx_id, false)
-
-		info.shellbox, self.server_page = self:CreateRemoteConsole(info.name, function(str)
-			self:RunString(info.id, str)
-		end, info.bitmap(self))
+		tb:AddLabel(console.wx_run_id, "Run On " .. console.name)
+		tb:EnableTool(console.wx_run_id, false)
 	end
 
 	tb:Realize()
 end
 
 function PLUGIN:onUnregister()
-	local tb = ide:GetToolBar()
-	for _, info in ipairs(self.consoles) do
-		tb:DeleteTool(info.tool_bar.tool)
-	end
-	tb:Realize()
-	self:StopProcesses()
-end
-
-function PLUGIN:onEditorSave(editor)
-	local path = ide:GetDocument(editor).filePath:gsub("\\", "/"):lower()
-
-	if path:find("^.+/client/[^/]+$") then
-		self:RunScript("client", path)
-	elseif path:find("^.+/server/[^/]+$") then
-		self:RunScript("server", path)
-	else
-		self:RunScript("client", path)
-		self:RunScript("server", path)
+	for _, console in pairs(self.consoles) do
+		console:Stop()
 	end
 end
 
@@ -256,16 +260,34 @@ function PLUGIN:onEditorKeyDown(editor, event)
 	local keycode = event:GetKeyCode()
 	local mod = event:GetModifiers()
 
-	if keycode == wx.WXK_F5 or keycode == wx.WXK_F6 then
-		if mod == wx.wxMOD_SHIFT then
-			self:StopProcesses()
-		else
-			self:StartProcesses()
+	for _, console in pairs(self.consoles) do
+		if console.on_key then
+			local res = console:on_key(keycode, mod)
+			if res ~= nil then
+				return res
+			end
 		end
-		return false
 	end
 end
 
+function PLUGIN:onIdle()
+	for _, console in pairs(self.consoles) do
+		if console.on_update then
+			console:on_update()
+		end
+	end
+end
+
+function PLUGIN:onEditorSave(editor)
+	local path = ide:GetDocument(editor).filePath:gsub("\\", "/")
+	path = path:match("shared/lua/(.+)") or path
+
+	for _, console in pairs(self.consoles) do
+		if console.on_save and self:IsRunning(console.id) then
+			console:on_save(path)
+		end
+	end
+end
 
 function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	--ide.frame.bottomnotebook:RemovePage(0)
@@ -735,108 +757,5 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 	return shellbox, page
 end
-
-icons.server = {
-	"16 16 22 1",
-	" 	c #383838",".	c #353535","+	c #333333",
-	"@	c #303030","#	c #2F2F2F","$	c #2D2D2D",
-	"%	c #242424","&	c #3B3B3B","*	c #272727",
-	"=	c #363636","-	c #323232",";	c #808080",
-	">	c #292929",",	c #2B2B2B","'	c #232323",
-	")	c #3A3A3A","!	c #FFFFFF","~	c #4B4B4B",
-	"{	c #C0C0C0","]	c #3F3F3F","^	c #4A4A4A",
-	"/	c #4D4D4D",
-	" ..+@#$$%& .$*=-",	" ;;;;;;;;;;;;;;-",
-	">;************;@",	"$;************;>",
-	" ;************;%",	",;************;%",
-	"-;************;'",	"#;************;)",
-	"#;*!**********;&",	"~{**!*********{]",
-	"~{*!**!!!*****{@",	"~{************{-",
-	"~{{{{{{{{{{{{{{$",	"^{{{{{{{{{{{**{-",
-	"/{{{{{{{{{{{{{{$",	"]--@@@@@@$@@@@--"
-}
-
-icons.client = {
-	"16 16 43 1",
-	" 	c #2F200D",".	c #2B1E0D","+	c #2F1F0F",
-	"@	c #281C0B","#	c #241808","$	c #261A0A",
-	"%	c #2A1D0D","&	c #332411","*	c #422A12",
-	"=	c #3F2A15","-	c #2C1E0E",";	c #B6896C",
-	">	c #BD8E72",",	c #C69680","'	c #BD8B72",
-	")	c #BD8E74","!	c #AC765A","~	c #342512",
-	"{	c #AA7D66","]	c #B4846D","^	c #AD806D",
-	"/	c #9C725C","(	c #BB8972","_	c #9C694C",
-	":	c #FFFFFF","<	c #523D89","[	c #B57B67",
-	"}	c #9C6346","|	c #B37B62","1	c #B78272",
-	"2	c #6A4030","3	c #BE886C","4	c #A26A47",
-	"5	c #805334","6	c #905E43","7	c #965F40",
-	"8	c #774235","9	c #8F5E3E","0	c #815339",
-	"a	c #6F452C","b	c #6D432A","c	c #7A4E33",
-	"d	c #83553B",
-	"  ..++@@##$$..%%",	"  ..++@@##$$..%%",
-	"......&&**==--@@",	"......&&**==--@@",
-	"..;;>>,,''))!!~~",	"..;;>>,,''))!!~~",
-	"{{]]{{^^//((____",	"{{]]{{^^//((____",
-	"]]::<<[[((<<::{{",	"]]::<<[[((<<::{{",
-	"}}||112222334455",	"}}||112222334455",
-	"6677888888889900",	"6677888888889900",
-	"aabb0000ccddddcc",	"aabb0000ccddddcc"
-}
-
-icons.build = {
-	"16 16 9 1",
-	" 	c None",
-	".	c #444444","+	c #FFFFFF","@	c #D8D8D8",
-	"#	c #C1C1C1","$	c #493615","%	c #684E1E",
-	"&	c #896727","*	c #281E0B",
-	"                ","      .....     ",
-	"     .+@##@.$%  ","      ....##&*  ",
-	"          $@#.  ","         $%*#@. ",
-	"        $&* .#. ","       $%*  .#. ",
-	"      $&*   .@. ","     $%*    .+. ",
-	"    $&*      .  ","   $%*          ",
-	"  $&*           ","  %*            ",
-	"                ","                "
-}
-
-icons.start = {
-	"16 16 76 1",
-	" 	c None",
-	".	c #87B25A","+	c #98C768","@	c #6BAB41","#	c #70B046",
-	"$	c #6F9B43","%	c #5F9F35","&	c #65A53B","*	c #89C95F",
-	"=	c #87C75D","-	c #71B147",";	c #8BBA5B",">	c #73B349",
-	",	c #5F9A38","'	c #57972D",")	c #6FAF45","!	c #91C061",
-	"~	c #9FCE6F","{	c #97C667","]	c #86B556","^	c #94C364",
-	"/	c #A0CF70","(	c #77B74D","_	c #6AAA40",":	c #56962C",
-	"<	c #406827","[	c #609B39","}	c #93C263","|	c #74B44A",
-	"1	c #5B9B31","2	c #72A142","3	c #76B64C","4	c #72B248",
-	"5	c #62A238","6	c #7BBB51","7	c #263E17","8	c #352518",
-	"9	c #567436","0	c #446E29","a	c #5B9634","b	c #68A83E",
-	"c	c #66A63C","d	c #81B051","e	c #9CCB6C","f	c #82C258",
-	"g	c #284018","h	c #3C4F28","i	c #2F4A1E","j	c #493223",
-	"k	c #39281B","l	c #4A742E","m	c #4C7630","n	c #5E7E3F",
-	"o	c #5C9735","p	c #5D9D33","q	c #8DBC5D","r	c #253E16",
-	"s	c #241911","t	c #634630","u	c #3E6822","v	c #47712C",
-	"w	c #436D28","x	c #2B441B","y	c #2C461B","z	c #284217",
-	"A	c #2C2C2C","B	c #6F5037","C	c #4F3726","D	c #3A4D26",
-	"E	c #312217","F	c #4B3625","G	c #5B402C","H	c #79573C",
-	"I	c #3D2C1E","J	c #373737","K	c #585858",
-	"                ",
-	"      .+@#      ",
-	"    $%&*=-;>    ",
-	"  ,')!~{]^/(_:  ",
-	" <[_}|1234@/567 ",
-	" 890abcde&f]ghi ",
-	" jklmnop|qrsshs ",
-	" 8ttuvkwxyzsssA ",
-	" BCtkkCkDssEsEF ",
-	" GttHHCksIIEFIE ",
-	" GHkkkCCEEJEEEE ",
-	" jtHtHHkCEEFAEE ",
-	" BkCCttKIEFEEsE ",
-	"   GkkCtIEIIE   ",
-	"     GkHEEE     ",
-	"       GI       "
-}
 
 return PLUGIN
