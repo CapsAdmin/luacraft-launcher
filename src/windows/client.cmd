@@ -1,2 +1,2 @@
-@ECHO OFF
-PowerShell.exe -ExecutionPolicy Bypass -Command ".\build.ps1 client"
+@echo off
+PowerShell.exe -ExecutionPolicy Bypass -Command ".\main.ps1 client"
