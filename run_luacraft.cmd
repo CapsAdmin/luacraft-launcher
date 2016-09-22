@@ -1,3 +1,3 @@
 @echo off
 cd src/windows
-ide.cmd
+run.cmd

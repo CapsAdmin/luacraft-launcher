@@ -119,7 +119,7 @@ function setup_run_directory($what)
 	
 	cmd /c rmdir "minecraft\run_$what\addons" | Out-Null
 	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons" | Out-Null
-
+	
 	cmd /c rmdir "minecraft\run_$what\lua" | Out-Null
 	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua" | Out-Null
 	
@@ -177,7 +177,7 @@ function build($skip_setup_decomp)
 		}
 		.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 	Set-Location ..
-	
+
 	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		Error "build error!" "unable to find build output minecraft\build\libs\modid-1.0.jar"
 	} else {
@@ -201,22 +201,30 @@ function build($skip_setup_decomp)
 	Write-Output "finished building luacraft"
 }
 
+function launch_ide() {
+	if(!(Is-File "ide\zbstudio.exe"))	{
+		fetch $URL_IDE "ide.zip" "ide" $true
+	}
+	
+	Set-Location ide
+		.\zbstudio.exe -cfg ../../shared/ide/config.lua
+	Set-Location ..
+}
+
 if($arg -eq "build") {
 	build
 }
 
 if($arg -eq "ide") {
-	if(!(Is-File "ide\zbstudio.exe"))	{
-		fetch $URL_IDE "ide.zip" "ide" $true
-	}
-	
+	launch_ide
+}
+
+if($arg -eq "run") {
 	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		build
 	}
-
-	Set-Location ide
-		.\zbstudio.exe -cfg ../../shared/ide/config.lua
-	Set-Location ..
+	
+	launch_ide
 }
 
 if($arg -eq "client" -Or $arg -eq "server") {
@@ -256,6 +264,12 @@ if($arg -eq "update-luacraft") {
 	Remove "luacraft.zip"
 	Remove "minecraft\src"
 	build $true
+}
+
+if($arg -eq "update-ide") {
+	Remove "ide.zip"
+	Remove "ide"
+	launch_ide
 }
 
 if($arg -eq "reset") {
