@@ -136,6 +136,54 @@ function Kill-Processes-With-Title($title) {
 	}
 }
 
+function Gradle($what, $which) {
+	$env:JAVA_HOME = "$pwd\jdk"
+	Set-Location minecraft
+
+	$skip_args = @(
+		"-x sourceApiJava", 
+		"-x compileApiJava",
+		"-x processApiResources",
+		"-x apiClasses",
+		"-x sourceMainJava",
+		"-x compileJava",
+		"-x processResources",
+		"-x classes",
+		"-x jar",
+		"-x getVersionJson",
+		"-x extractNatives",
+		"-x extractUserdev",
+		"-x getAssetIndex",
+		"-x getAssets",
+		"-x makeStart"
+	);
+	
+	$dir_args = '-Prun_dir="run_' + $which + '" --project-cache-dir .cache_' + $which + ' --gradle-user-home .home_' + $which
+	
+	$extra_args = "-i "
+	
+	if($what -Eq "setup") {
+		$arg_line = "setupDecompWorkspace --refresh-dependencies" + " " + $dir_args
+	} elseif($what -Eq "build") {
+		$arg_line = "build " + $dir_args
+	} elseif($what -Eq "run") {
+		if($which -Eq "client") {
+			$run_arg = "runClient"
+		} elseif ($which -Eq "server") {
+			$run_arg = "runServer"
+		}
+	
+		$arg_line = "build" + " " + $run_arg + " " + $dir_args + " " + $skip_args
+	}
+	
+	Start-Process -FilePath "$pwd\gradlew.bat" -ArgumentList $arg_line -Wait -NoNewWindow 
+	Set-Location ..
+	
+	# --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
+	#.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared			
+	#.\gradlew -i $run -Prun_dir=run_$arg --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+}
+
 function fetch($url, $zip_name, $dir, $move_files) {
 	Download $url $zip_name
 	Remove $dir
@@ -201,13 +249,10 @@ function build($skip_setup_decomp)
 	
 	Write-Output "building luacraft..."
 
-	$env:JAVA_HOME = "$pwd\jdk"
-	Set-Location minecraft
-		if (!$skip_setup_decomp) {
-			.\gradlew.bat setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
-		}
-		.\gradlew.bat build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
-	Set-Location ..
+	if (!$skip_setup_decomp) {
+		Gradle setup shared
+	}
+	Gradle build shared
 
 	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
 		Error "build error!" "unable to find build output minecraft\build\libs\modid-1.0.jar"
@@ -268,16 +313,13 @@ if($arg -eq "client" -Or $arg -eq "server") {
 		$run = "runServer"
 		Add-Content "minecraft\run_server\eula.txt" "eula=true"
 		if(!(Is-File "minecraft\run_server\server.properties")) {
-			Add-Content "minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
+			Add-Content "minecraft\run_server\server.properties" "online-mode=false`ngamemode=1`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
 		}
 	}
 		
 	Kill-Processes-With-Title "luacraft_$arg"
 	
-	$env:JAVA_HOME = "$pwd\jdk"
-	Set-Location minecraft
-		.\gradlew -i $run -Prun_dir=run_$arg --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
-	Set-Location ..
+	Gradle run $arg
 }
 
 if($arg -eq "update-scripts") {
