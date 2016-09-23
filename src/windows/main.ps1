@@ -83,7 +83,7 @@ function Download($url, $location) {
 		Move "$location.tmp" "$location"
 		Write-Host "OK"
 	} else {
-		Write-Host "'$pwd\$location' already exists. Skipping"
+		Write-Host -NoNewline "skipping '$pwd\$location' as it already exists. "
 		Write-Host "OK"
 	}
 }
