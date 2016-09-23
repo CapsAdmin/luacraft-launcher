@@ -276,7 +276,7 @@ if($arg -eq "client" -Or $arg -eq "server") {
 	
 	$env:JAVA_HOME = "$pwd\jdk"
 	Set-Location minecraft
-		.\gradlew -i $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+		.\gradlew -i $run -Prun_dir=run_$arg --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	Set-Location ..
 }
 
