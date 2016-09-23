@@ -38,6 +38,16 @@ function Create-Directory($location) {
 	Write-Output "OK"
 }
 
+function Remove-Link($path) {
+	if (Is-Directory $path) {
+		cmd /c rmdir "$path" | Out-Null
+	}
+}
+
+function Create-Link($from, $to) {
+	cmd /c mklink /d /j "$from" "$to" | Out-Null
+}
+
 function Remove($path) {
 	if(Is-Directory "$path") {
 		Write-Host -NoNewline "Remove directory: '$pwd\$path' ... "
@@ -117,11 +127,11 @@ function setup_run_directory($what)
 		Create-Directory "minecraft\run_$what"
 	}
 	
-	cmd /c rmdir "minecraft\run_$what\addons" | Out-Null
-	cmd /c mklink /d /j "minecraft\run_$what\addons" "..\shared\addons" | Out-Null
+	Remove-Link "minecraft\run_$what\addons"
+	Create-Link "..\shared\addons" "minecraft\run_$what\addons"
 	
-	cmd /c rmdir "minecraft\run_$what\lua" | Out-Null
-	cmd /c mklink /d /j "minecraft\run_$what\lua" "..\shared\lua" | Out-Null
+	Remove-Link "minecraft\run_$what\lua"
+	Create-Link "..\shared\lua" "minecraft\run_$what\lua"
 	
 	if (!(Is-Directory "minecraft\.home_$what") -And (Is-Directory "minecraft\.home_shared")) {
 		Copy-Item2 "minecraft\.home_shared" "minecraft\.home_$what"
@@ -276,10 +286,10 @@ if($arg -eq "reset") {
 	[System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
 	$OUTPUT = [System.Windows.Forms.MessageBox]::Show("Everything will be deleted and you will have to run build.cmd again." , "confirm" , 4)
 	if ($OUTPUT -eq "YES" ){
-		cmd /c rmdir "minecraft\run_client\lua" | Out-Null
-		cmd /c rmdir "minecraft\run_client\addons" | Out-Null
-		cmd /c rmdir "minecraft\run_server\lua" | Out-Null
-		cmd /c rmdir "minecraft\run_server\addons" | Out-Null
+		Remove-Link "minecraft\run_client\lua"
+		Remove-Link "minecraft\run_client\addons"
+		Remove-Link "minecraft\run_server\lua"
+		Remove-Link "minecraft\run_server\addons"
 	
 		Remove "ide"
 		Remove "jdk"
@@ -303,10 +313,11 @@ if($arg -eq "clean") {
 	Remove "minecraft\.home_client"
 	Remove "minecraft\.home_server"
 	
-	cmd /c rmdir "minecraft\run_client\lua" | Out-Null
-	cmd /c rmdir "minecraft\run_client\addons" | Out-Null
-	cmd /c rmdir "minecraft\run_server\lua" | Out-Null
-	cmd /c rmdir "minecraft\run_server\addons" | Out-Null
+	Remove-Link "minecraft\run_client\lua"
+	Remove-Link "minecraft\run_client\lua"
+	Remove-Link "minecraft\run_client\addons"
+	Remove-Link "minecraft\run_server\lua"
+	Remove-Link "minecraft\run_server\addons"
 	
 	Remove "minecraft\run_client"
 	Remove "minecraft\run_server"
@@ -338,5 +349,7 @@ if($arg -eq "clean") {
 	Remove-Item "ide\bin\clibs\*.dylib" -Recurse -Force
 	Remove-Item "ide\bin\clibs\git\*.dylib" -Recurse -Force
 	Remove-Item "ide\bin\clibs\mime\*.dylib" -Recurse -Force
-	Remove-Item "ide\bin\clibs\socket\*.dylib" -Recurse -Force	
+	Remove-Item "ide\bin\clibs\socket\*.dylib" -Recurse -Force
+	
+	Write-Output "clean successful"
 }
