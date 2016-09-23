@@ -13,6 +13,4 @@ styles.indicator.varglobal = nil
 styles.indicator.varmasking = nil
 styles.indicator.varmasked = nil
 
-toolbar.icons = {}
-
 package("packages/") -- relative to config.lua

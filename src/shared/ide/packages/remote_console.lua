@@ -199,6 +199,7 @@ function PLUGIN:onRegister()
 	self.consoles = {}
 
 	local tb = ide:GetToolBar()
+	tb:ClearTools()
 
 	for _, info in ipairs(self:Setup()) do
 		local console = {}
