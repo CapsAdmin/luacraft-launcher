@@ -245,7 +245,7 @@ if($arg -eq "ide") {
 }
 
 if($arg -eq "run") {
-	if (!(Is-File "minecraft\build\libs\modid-1.0.jar")) {
+	if (!(Is-File "minecraft\.cache_shared\2.7\taskArtifacts\fileSnapshots.bin")) {
 		build
 	}
 	
@@ -345,7 +345,20 @@ if($arg -eq "clean") {
 	Remove "minecraft\run_client"
 	Remove "minecraft\run_server"
 	Remove "minecraft\build\taskLogs"
+	
 	Remove "minecraft\.cache_shared\gradle.log"
+	Remove "minecraft\.cache_shared\caches\2.7\scripts"
+	
+	Remove "minecraft\.cache_shared\2.7\taskArtifacts\fileSnapshots.bin"
+	Remove "minecraft\.cache_shared\2.7\taskArtifacts\taskArtifacts.bin"
+	
+	Remove "minecraft\.home_shared\caches\modules-2\metadata-2.15\artifact-at-repository.bin"
+	Remove "minecraft\.home_shared\caches\modules-2\metadata-2.15\artifact-at-url.bin"
+	
+	Remove "minecraft\.home_shared\caches\minecraft\net\minecraftforge\forge\1.8.9-11.15.1.1722\start\GradleStart.class"
+	Remove "minecraft\.home_shared\caches\minecraft\net\minecraftforge\forge\1.8.9-11.15.1.1722\start\GradleStart.java"
+	Remove "minecraft\.home_shared\caches\minecraft\net\minecraftforge\forge\1.8.9-11.15.1.1722\start\net\minecraftforge\gradle\GradleStartCommon.class"
+	Remove "minecraft\.home_shared\caches\minecraft\net\minecraftforge\forge\1.8.9-11.15.1.1722\start\net\minecraftforge\gradle\GradleStartCommon.java"
 	
 	Remove "ide\bin\linux"
 	Remove "ide\bin\lua.app"
@@ -377,17 +390,4 @@ if($arg -eq "clean") {
 	Remove-Item "ide\bin\clibs\socket\*.dylib" -Recurse -Force
 	
 	Write-Output "clean successful"
-}
-
-if($arg -eq "post-install-fix") {
-	$paths = @(
-		"minecraft\.home_shared\caches\modules-2\metadata-2.15\artifact-at-url.bin",
-		"minecraft\.home_shared\caches\modules-2\metadata-2.15\artifact-at-repository.bin",
-		"minecraft\.cache_shared\2.7\taskArtifacts\fileSnapshots.bin",
-		"minecraft\.cache_shared\2.7\taskArtifacts\taskArtifacts.bin"
-	);
-	
-	foreach($path in $paths) {
-		(Get-Content $path).replace('C:\luacraft_dev\', $(Resolve-Path "$pwd\..\..\")) | Set-Content $path
-	}
 }
