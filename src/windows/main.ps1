@@ -159,9 +159,7 @@ function Gradle($what, $which) {
 	);
 	
 	$dir_args = '-Prun_dir="run_' + $which + '" --project-cache-dir .cache_' + $which + ' --gradle-user-home .home_' + $which
-	
-	$extra_args = "-i "
-	
+		
 	if($what -Eq "setup") {
 		$arg_line = "setupDecompWorkspace --refresh-dependencies" + " " + $dir_args
 	} elseif($what -Eq "build") {
@@ -175,6 +173,8 @@ function Gradle($what, $which) {
 	
 		$arg_line = "build" + " " + $run_arg + " " + $dir_args + " " + $skip_args
 	}
+	
+	$arg_line = " -i " + $arg_line
 	
 	Start-Process -FilePath "$pwd\gradlew.bat" -ArgumentList $arg_line -Wait -NoNewWindow 
 	Set-Location ..
@@ -390,6 +390,7 @@ if($arg -eq "clean") {
 	
 	Remove "minecraft\.cache_shared\gradle.log"
 	Remove "minecraft\.cache_shared\caches\2.7\scripts"
+	Remove "minecraft\.home_shared\caches\2.7\scripts"
 	
 	Remove "minecraft\.cache_shared\2.7\taskArtifacts\fileSnapshots.bin"
 	Remove "minecraft\.cache_shared\2.7\taskArtifacts\taskArtifacts.bin"
