@@ -121,6 +121,21 @@ function Extract($file, $location, $move_files) {
 	Write-Host "OK"
 }
 
+function Kill-Processes-With-Title($title) {
+	$info = (tasklist /v /fo csv | Select-String $title)
+	
+	if ($info) {
+		$parent_pid = (gwmi win32_process -Filter "processid='$pid'").parentprocessid
+		foreach ($line in ($info -Split '`n')) {
+			$arr = ($line.Replace('"', '') -Split ',')
+			if ($arr[1] -Ne $parent_pid) {
+				Write-Output "killing existing process with $title"
+				cmd /c taskkill /F /T /PID $arr[1]
+			}
+		}		
+	}
+}
+
 function fetch($url, $zip_name, $dir, $move_files) {
 	Download $url $zip_name
 	Remove $dir
@@ -256,10 +271,12 @@ if($arg -eq "client" -Or $arg -eq "server") {
 			Add-Content "minecraft\run_server\server.properties" "online-mode=false`nlevel-type=CUSTOMIZED`ngenerator-settings=3;minecraft:bedrock,59*minecraft:stone,3*minecraft:dirt,minecraft:grass;1;village,mineshaft,stronghold,biome_1,dungeon,decoration,lake,lava_lake`n"
 		}
 	}
-
+		
+	Kill-Processes-With-Title "luacraft_$arg"
+	
 	$env:JAVA_HOME = "$pwd\jdk"
 	Set-Location minecraft
-		.\gradlew $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
+		.\gradlew -i $run -Prun_dir="run_$arg" --project-cache-dir .cache_$arg --gradle-user-home .home_$arg -x sourceApiJava -x compileApiJava -x processApiResources -x apiClasses -x sourceMainJava -x compileJava -x processResources -x classes -x jar -x getVersionJson -x extractNatives -x extractUserdev -x getAssetIndex -x getAssets -x makeStart
 	Set-Location ..
 }
 

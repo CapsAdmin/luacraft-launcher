@@ -153,12 +153,11 @@ function PLUGIN:StartProcess(id)
 		function(...) console:print(...) end,
 		"luacraft_" .. id,
 		function()
-			console:print("stopped")
 			tb:ToggleTool(console.wx_start_id, false)
 			tb:EnableTool(console.wx_run_id, false)
 			tb:Realize()
 			ide:GetUIManager():Update()
-			
+
 			self:StopProcess(console.id)
 		end
 	)
@@ -175,16 +174,16 @@ function PLUGIN:StopProcess(id)
 	local console = self.consoles[id]
 
 	if self:IsRunning(console.id) then
-		console:print("stopping " .. console.name .. "...")
-
 		local pid = self.consoles[id].pid
+		console:print("stopping " .. console.name .. (" (pid: %d) ... "):format(pid))
+		os.execute("taskkill /F /T /PID " .. pid)
 		local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
 		if ret == wx.wxKILL_OK then
-			ide:Print(("stopped process (pid: %d)."):format(pid))
+			console:print(("stopped process (pid: %d)."):format(pid))
 		elseif ret ~= wx.wxKILL_NO_PROCESS then
 			wx.wxMilliSleep(250)
 			if wx.wxProcess.Exists(pid) then
-				ide:Print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
+				console:print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
 			end
 		end
 
