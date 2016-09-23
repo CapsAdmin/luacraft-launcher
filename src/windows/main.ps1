@@ -40,12 +40,18 @@ function Create-Directory($location) {
 
 function Remove-Link($path) {
 	if (Is-Directory $path) {
-		cmd /c rmdir "$path" | Out-Null
+		$res = cmd /c rmdir "$path" 2>&1
+		if ($lastExitCode -ne 0) {
+			Error "remove junction error" "$res $path"
+		}
 	}
 }
 
 function Create-Link($from, $to) {
-	cmd /c mklink /d /j "$from" "$to" | Out-Null
+	$res = cmd /c mklink /d /j `"$from`" `"$to`" 2>&1
+	if ($lastExitCode -ne 0) {
+        Error "create junction error" "$res"
+	}
 }
 
 function Remove($path) {
@@ -128,10 +134,10 @@ function setup_run_directory($what)
 	}
 	
 	Remove-Link "minecraft\run_$what\addons"
-	Create-Link "..\shared\addons" "minecraft\run_$what\addons"
+	Create-Link "minecraft\run_$what\addons" "..\shared\addons"
 	
 	Remove-Link "minecraft\run_$what\lua"
-	Create-Link "..\shared\lua" "minecraft\run_$what\lua"
+	Create-Link "minecraft\run_$what\lua" "..\shared\lua"
 	
 	if (!(Is-Directory "minecraft\.home_$what") -And (Is-Directory "minecraft\.home_shared")) {
 		Copy-Item2 "minecraft\.home_shared" "minecraft\.home_$what"
