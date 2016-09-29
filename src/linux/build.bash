@@ -63,7 +63,7 @@ build ()
 	(
 		export JAVA_HOME="$ROOT_DIR/jdk"
 		cd minecraft || exit
-		bash gradlew setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
+		bash gradlew -Dorg.gradle.jvmargs=-Xmx4G setupDecompWorkspace --refresh-dependencies -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 		bash gradlew build -Prun_dir="run" --project-cache-dir .cache_shared --gradle-user-home .home_shared
 	)
 	mkdir -p "$ROOT_DIR/minecraft/run_client"
